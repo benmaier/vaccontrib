@@ -53,6 +53,25 @@ def get_contribution_matrix(K):
 
     return C
 
+def get_reduced_contribution_matrix(K):
+    C = get_contribution_matrix(K)
+    C = C.sum(axis=0).sum(axis=0)
+    return C
+
+def get_reduced_vaccinated_susceptile_contribution_matrix(K):
+    C = get_reduced_contribution_matrix(K)
+    _C = np.zeros((2,2))
+    _C[0,0] = C[0,0]
+    _C[0,1] = C[0,1:].sum()
+    _C[1,0] = C[1:,0].sum()
+    _C[1,1] = C[1:,1:].sum()
+    return _C
+
+def get_reduced_population_contribution_matrix(K):
+    C = get_contribution_matrix(K)
+    C = C.sum(axis=-1).sum(axis=-1)
+    return C
+
 if __name__=="__main__":
 
     gamma = np.array([[1.,1.],[1.,1.]])

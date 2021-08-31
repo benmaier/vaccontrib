@@ -1,6 +1,6 @@
 PKG=vaccontrib
-PYTHON=python
-PIP=pip
+PYTHON=python3
+PIP=pip3
 
 default: 
 	make ${PYTHON}

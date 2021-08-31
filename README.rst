@@ -1,20 +1,14 @@
-*Note: This is a dummy README for the package you want to build. For a
-README for the package builder, check
-out*\ `PACKAGE_CREATION_README.md <https://github.com/benmaier/vaccontrib/blob/main/PACKAGE_CREATION_README.md>`__
-
-.. image:: https://github.com/benmaier/vaccontrib/raw/main/img/Fig1.png
-   :alt: logo
+vaccontrib
+==========
 
 |CircleCI|
 
 Description of this package goes here.
 
 -  repository: https://github.com/benmaier/vaccontrib/
--  documentation: http://vaccontrib.benmaier.org/
+-  documentation: http://vaccontrib.readthedocs.io/
 
 .. code:: python
-
-   from vaccontrib.sqrt import get_sqrt_2
 
    print(get_sqrt_2())
 
@@ -37,8 +31,8 @@ only.
 Dependencies
 ------------
 
-``vaccontrib`` directly depends on the following packages which
-will be installed by ``pip`` during the installation process
+``vaccontrib`` directly depends on the following packages which will be
+installed by ``pip`` during the installation process
 
 -  ``numpy>=1.17``
 
@@ -46,7 +40,7 @@ Documentation
 -------------
 
 The full documentation is available at
-`vaccontrib.benmaier.org <http://vaccontrib.benmaier.org>`__.
+`vaccontrib.readthedocs.io <http://vaccontrib.readthedocs.io>`__.
 
 Changelog
 ---------

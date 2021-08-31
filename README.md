@@ -8,7 +8,11 @@ Description of this package goes here.
 * documentation: http://vaccontrib.readthedocs.io/
 
 ```python
-print(get_sqrt_2())
+>>> from vaccontrib.covid import get_reduced_vaccinated_susceptile_contribution_matrix_covid
+>>> R0 = 6
+>>> C = get_reduced_vaccinated_susceptile_contribution_matrix_covid(R0,variant='delta')
+array([[1.61305929, 0.23342947],
+       [0.39478329, 0.08083173]])
 ```
 
 ## Install

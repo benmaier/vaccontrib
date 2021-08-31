@@ -28,7 +28,7 @@ setup(
                  'Programming Language :: Python :: 3.8',
                  ],
     project_urls={
-        'Documentation': 'http://vaccontrib.benmaier.org',
+        'Documentation': 'http://vaccontrib.readthedocs.io',
         'Contributing Statement': 'https://github.com/benmaier/vaccontrib/blob/master/CONTRIBUTING.md',
         'Bug Reports': 'https://github.com/benmaier/vaccontrib/issues',
         'Source': 'https://github.com/benmaier/vaccontrib/',
