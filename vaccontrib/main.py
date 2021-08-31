@@ -10,6 +10,10 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
     """
     """
 
+    assert(N.ndim==1)
+    for matrix in [gamma,S,s,r,a,b]:
+        assert(matrix.ndim==2)
+
     M, _ = gamma.shape
     _, V = S.shape
 
@@ -21,7 +25,10 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
 
     if not hasattr(R0,'__len__'):
         R0 = np.ones(V) * R0
+    else:
+        R0 = np.array(R0,dtype=np.float64)
 
+            #np.sqrt(R0[None,None,None,:]*R0[None,None,:,None]) * \
     K = 1/rho0 * \
             R0[None,None,None,:] * \
             gamma[:,:,None,None] * \
@@ -34,6 +41,27 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
 
     return K
 
+def get_homogeneous_contribution_matrix(R0,v,r,s):
+
+    if not hasattr(R0,'__len__'):
+        _R = np.ones(2) * R0
+    else:
+        _R = np.array(R0,dtype=np.float64)
+
+    assert(_R.ndim==1)
+
+    _S = 0
+    _V = 1
+
+    R = np.zeros((2,2))
+
+    R[_S,_S] = (1-v)**2/(1-v*s) * _R[_S]
+    R[_S,_V] = v*(1-v)*(1-s)*(1-r)/(1-v*s) * _R[_V]
+    R[_V,_S] = v*(1-v)*(1-s)/(1-v*s) * _R[_S]
+    R[_V,_V] = v**2 * (1-s)**2 * (1-r)/(1-v*s) * _R[_V]
+
+    return R
+
 def get_4d_matrix_as_2d_block(K):
     M, _, V, __ = K.shape
     _K = np.zeros((M*V, M*V))
@@ -42,7 +70,7 @@ def get_4d_matrix_as_2d_block(K):
             _K[i*V:(i+1)*V,j*V:(j+1)*V] = K[i,j,:,:]
     return _K
 
-def get_contribution_matrix(K):
+def get_contribution_matrix(K,return_eigenvector_too=False):
 
     M, _, V, __ = K.shape
     _K = get_4d_matrix_as_2d_block(K)
@@ -51,14 +79,17 @@ def get_contribution_matrix(K):
 
     C = K * y[None,:,None,:]
 
-    return C
+    if return_eigenvector_too:
+        return C, y
+    else:
+        return C
 
 def get_reduced_contribution_matrix(K):
     C = get_contribution_matrix(K)
     C = C.sum(axis=0).sum(axis=0)
     return C
 
-def get_reduced_vaccinated_susceptile_contribution_matrix(K):
+def get_reduced_vaccinated_susceptible_contribution_matrix(K):
     C = get_reduced_contribution_matrix(K)
     _C = np.zeros((2,2))
     _C[0,0] = C[0,0]
@@ -71,6 +102,20 @@ def get_reduced_population_contribution_matrix(K):
     C = get_contribution_matrix(K)
     C = C.sum(axis=-1).sum(axis=-1)
     return C
+
+def get_eigenvector(K):
+    _, y = get_contribution_matrix(K,return_eigenvector_too=True)
+    return y
+
+def get_reduced_vaccinated_susceptible_eigenvector(K):
+    _, y = get_contribution_matrix(K,return_eigenvector_too=True)
+    y = y.sum(axis=0)
+    return y
+
+def get_reduced_population_eigenvector(K):
+    _, y = get_contribution_matrix(K,return_eigenvector_too=True)
+    y = y.sum(axis=-1)
+    return y
 
 if __name__=="__main__":
 
@@ -89,22 +134,3 @@ if __name__=="__main__":
     #print(C.reshape((4,4)))
     print(C.sum(axis=0).sum(axis=0))
     print(C.sum())
-
-
-    #print(C[:,:,0,1])
-
-    #print()
-    #print(K[:,:,0,1])
-    #print(C)
-
-    rows = []
-    for row in np.array_split(C,2,axis=0):
-        rows.append([])
-        for col in np.array_split(row,2,axis=1):
-            rows[-1].append(col.reshape(2,2))
-
-    #print(np.array_split(C,2,axis=0))
-    #print(np.block(rows))
-
-
-

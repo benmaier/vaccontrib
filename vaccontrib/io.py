@@ -145,6 +145,37 @@ def get_disease_free_state(
 
     return S
 
+def get_default_populations():
+    return _POPULATIONS
+
+def get_default_vaccination_statuses():
+    return _VACC_STATUSES
+
+def get_homogeneous_vaccination_parameters(
+                                variant='alpha',
+                                populations=_POPULATIONS,
+                                vaccination_statuses=_VACC_STATUSES,
+                            ):
+    fraction_vaccinated = get_fraction_vaccinated()
+    vaccine_fractions = get_vaccine_fractions()
+    population = get_population_sizes()
+
+
+    M = len(populations)
+    V = len(vaccination_statuses)
+
+    S = np.zeros((M, V))
+    S[:,0] = population * (1-fraction_vaccinated)
+    S[:,1:] = (population * fraction_vaccinated)[:,None] * vaccine_fractions
+    S_vacc = S[1:,1:]
+    s = get_susceptibility_reduction(variant=variant)[1:,1:]
+    r = get_transmissibility_reduction(variant=variant)[1:,1:]
+
+    _v = sum(population * fraction_vaccinated / sum(population))
+    _s = (s*S_vacc/S_vacc.sum()).sum()
+    _r = (r*S_vacc/S_vacc.sum()).sum()
+
+    return _v, _s, _r
 
 if __name__=="__main__":
     functions = [

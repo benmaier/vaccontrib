@@ -18,6 +18,7 @@ from .main import (
         get_next_generation_matrix_from_matrices,
         get_contribution_matrix,
         get_reduced_contribution_matrix,
-        get_reduced_vaccinated_susceptile_contribution_matrix,
+        get_reduced_vaccinated_susceptible_contribution_matrix,
         get_reduced_population_contribution_matrix,
+        get_homogeneous_contribution_matrix,
     )

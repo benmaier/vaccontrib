@@ -9,7 +9,8 @@ from vaccontrib.main import (
                 get_next_generation_matrix_from_matrices,
                 get_reduced_contribution_matrix,
                 get_contribution_matrix,
-                get_reduced_vaccinated_susceptile_contribution_matrix,
+                get_reduced_vaccinated_susceptible_contribution_matrix,
+                get_homogeneous_contribution_matrix,
             )
 import vaccontrib.io as io
 
@@ -126,13 +127,36 @@ class NextGenMatrixTest(unittest.TestCase):
 
         R0 = 4
         K1 = get_next_generation_matrix_from_matrices(R0,gamma,S,N,s,r,a,b)
-        C1 = get_reduced_vaccinated_susceptile_contribution_matrix(K1)
+        C1 = get_reduced_vaccinated_susceptible_contribution_matrix(K1)
 
         S = np.array([[0.4,0.6,],[0.4,0.6]])
         K2 = get_next_generation_matrix_from_matrices(R0,gamma,S,N,s[:,:2],r[:,:2],a[:,:2],b[:,:2])
-        C2 = get_reduced_vaccinated_susceptile_contribution_matrix(K2)
+        C2 = get_reduced_vaccinated_susceptible_contribution_matrix(K2)
 
         assert(np.all(np.isclose(C2, C1)))
+
+    def test_homogeneous(self):
+
+        _v = 0.69
+        _s = 0.85
+        _r = 0.5
+        R0 = [1.,4.]
+
+        gamma = np.array([[1.]])
+        S = np.array([[1-_v,_v]])
+        N = np.array([1.])
+        s = np.array([[0.,_s]])
+        r = np.array([[0.,_r]])
+        a = np.array([[1.,1.]])
+        b = np.array([[1.,1.]])
+
+        K1 = get_next_generation_matrix_from_matrices(R0,gamma,S,N,s,r,a,b)
+        C1 = get_reduced_vaccinated_susceptible_contribution_matrix(K1)
+
+        C2 = get_homogeneous_contribution_matrix(R0, _v, _r, _s)
+
+        assert(np.all(np.isclose(C1,C2)))
+
 
 
 
@@ -143,3 +167,4 @@ if __name__ == "__main__":
     T.test_4d_matrix_as_2d_block()
     T.test_spectrum()
     T.test_reduced()
+    T.test_homogeneous()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Load covid data.
+Functions handling covid data.
 """
 
 import numpy as np
@@ -11,7 +11,7 @@ from vaccontrib import (
             get_next_generation_matrix_from_matrices,
             get_contribution_matrix,
             get_reduced_contribution_matrix,
-            get_reduced_vaccinated_susceptile_contribution_matrix,
+            get_reduced_vaccinated_susceptible_contribution_matrix,
             get_reduced_population_contribution_matrix,
         )
 
@@ -40,9 +40,9 @@ def get_reduced_contribution_matrix_covid(R0,variant='alpha'):
     C = get_reduced_contribution_matrix(K)
     return C
 
-def get_reduced_vaccinated_susceptile_contribution_matrix_covid(R0,variant='alpha'):
+def get_reduced_vaccinated_susceptible_contribution_matrix_covid(R0,variant='alpha'):
     K = get_next_generation_matrix_covid(R0,variant)
-    C = get_reduced_vaccinated_susceptile_contribution_matrix(K)
+    C = get_reduced_vaccinated_susceptible_contribution_matrix(K)
     return C
 
 def get_reduced_population_contribution_matrix_covid(R0,variant='alpha'):
@@ -65,6 +65,6 @@ if __name__=="__main__":
     print()
     print()
     print()
-    print(get_reduced_vaccinated_susceptile_contribution_matrix_covid(R0,variant='delta'))
+    print(get_reduced_vaccinated_susceptible_contribution_matrix_covid(R0,variant='delta'))
 
 
