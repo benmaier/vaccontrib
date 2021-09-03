@@ -15,9 +15,8 @@ from vaccontrib import (
             get_reduced_population_contribution_matrix,
         )
 
-def get_next_generation_matrix_covid(R0,variant='alpha'):
-    """
-    """
+def get_covid_matrices(variant='alpha'):
+
     gamma = io.get_contact_matrix()
     S = io.get_disease_free_state()
     N = io.get_population_sizes()
@@ -26,7 +25,22 @@ def get_next_generation_matrix_covid(R0,variant='alpha'):
     a = io.get_relative_infection_rate(variant=variant)
     b = io.get_relative_recovery_rate(variant=variant)
 
-    K = get_next_generation_matrix_from_matrices(R0, gamma, S, N, s, r, a, b)
+    return {
+                'gamma' : gamma,
+                'S' : S,
+                'N' : N,
+                's' : s,
+                'r' : r,
+                'a' : a,
+                'b' : b,
+            }
+
+
+def get_next_generation_matrix_covid(R0,variant='alpha'):
+    """
+    """
+    matrices = get_covid_matrices(variant)
+    K = get_next_generation_matrix_from_matrices(R0, **matrices)
 
     return K
 
