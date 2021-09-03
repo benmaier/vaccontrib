@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Load covid data.
+Functions to compute next generation matrices, contribution matrices,
+and other things surrounding those.
 """
 
 import numpy as np
@@ -13,6 +14,7 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
     assert(N.ndim==1)
     for matrix in [gamma,S,s,r,a,b]:
         assert(matrix.ndim==2)
+    assert(np.all(np.isclose(S.sum(axis=1),N)))
 
     M, _ = gamma.shape
     _, V = S.shape
@@ -83,6 +85,18 @@ def get_contribution_matrix(K,return_eigenvector_too=False):
         return C, y
     else:
         return C
+
+def get_2d_contribution_matrix(K,return_eigenvector_too=False):
+
+    R, y = get_spectral_radius_and_eigenvector(K)
+
+    C = K * y[None,:]
+
+    if return_eigenvector_too:
+        return C, y
+    else:
+        return C
+
 
 def get_reduced_contribution_matrix(K):
     C = get_contribution_matrix(K)
