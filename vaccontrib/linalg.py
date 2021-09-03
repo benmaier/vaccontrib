@@ -23,7 +23,7 @@ def get_spectral_radius_and_eigenvector(M):
 
         .. math::
 
-            sum_i y_i = 1
+            \sum_i y_i = 1
     """
 
     shape = M.shape
