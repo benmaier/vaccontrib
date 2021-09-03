@@ -9,7 +9,59 @@ from vaccontrib.linalg import get_spectral_radius_and_eigenvector
 
 def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
     """
+    Construct a next generation matrix from a bunch of
+    matrices defining SIR dynamics in a structured,
+    vaccinated population.
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    gamma : numpy.ndarray of shape ``M x M``
+        contact matrix, Entry ``gamma[i,j]``
+        contains the average number
+        of contacts an average `j`-individual has towards
+        `i`-individuals.
+    S : numpy.ndarray of shape ``M x V``
+        disease-free state, Entry ``S[m,v]`` contains
+        the number of m-group individuals
+        that are in vaccination state ``v``.
+    N : numpy.ndarray of shape ``M``
+        population sizes,
+        Entry ``population_size[m]`` contains the
+        size of population `m`.
+    s : numpy.ndarray of shape ``M x V``
+        susceptibility reduction,
+        Entry ``susceptibility_reduction[m,v]`` contains the
+        relative susceptibility reduction of individuals of
+        vaccination status `v` and population group `m`.
+    r : numpy.ndarray of shape ``M x V``
+        transmissibility reduction,
+        Entry ``transmissibility_reduction[m,v]`` contains the
+        relative transmissibility reduction of individuals of
+    a : numpy.ndarray of shape ``M x V``
+        relative infection rate, entry ``relative_infection_rate[m,v]``
+        contains the
+        infection rate (think: shedding rate) of individuals of
+        vaccination status `v` and population group `m` relative
+        to some base rate.
+    b : numpy.ndarray of shape ``M x V``
+        relative recovery rate,
+        Entry ``relative_recovery_rate[m,v]`` contains the
+        recovery rate of individuals of
+        vaccination status `v` and population group `m` relative
+        to some base rate.
+
+    Returns
+    =======
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
     """
+
 
     assert(N.ndim==1)
     for matrix in [gamma,S,s,r,a,b]:
@@ -44,6 +96,34 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
     return K
 
 def get_homogeneous_contribution_matrix(R0,v,r,s):
+    """
+    Construct a next generation matrix from a bunch of
+    matrices defining SIR dynamics in a homogeneous
+    population with two vaccination stati (not vaccinated,
+    vaccinated)
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    v : float
+        Fraction of individuals that are vaccinated
+    s : float
+        Susceptibility reduction of vaccine
+    r : float
+        transmissibility reduction of vaccine
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``2, 2``
+        The system's contribution matrix.
+        Entry ``C[v,w]`` contains the average number
+        of `w`-induced `v`-offspring during exponential
+        growth / decay where `w` and `v` can be either
+        'vaccinated' or 'not vaccinated'
+    """
 
     if not hasattr(R0,'__len__'):
         _R = np.ones(2) * R0
@@ -55,16 +135,17 @@ def get_homogeneous_contribution_matrix(R0,v,r,s):
     _S = 0
     _V = 1
 
-    R = np.zeros((2,2))
+    C = np.zeros((2,2))
 
-    R[_S,_S] = (1-v)**2/(1-v*s) * _R[_S]
-    R[_S,_V] = v*(1-v)*(1-s)*(1-r)/(1-v*s) * _R[_V]
-    R[_V,_S] = v*(1-v)*(1-s)/(1-v*s) * _R[_S]
-    R[_V,_V] = v**2 * (1-s)**2 * (1-r)/(1-v*s) * _R[_V]
+    C[_S,_S] = (1-v)**2/(1-v*s) * _R[_S]
+    C[_S,_V] = v*(1-v)*(1-s)*(1-r)/(1-v*s) * _R[_V]
+    C[_V,_S] = v*(1-v)*(1-s)/(1-v*s) * _R[_S]
+    C[_V,_V] = v**2 * (1-s)**2 * (1-r)/(1-v*s) * _R[_V]
 
-    return R
+    return C
 
 def get_4d_matrix_as_2d_block(K):
+    """Convert a 4D matrix of shape ``M, M, V, V`` to a block matrix of shape ``M*V, M*V``"""
     M, _, V, __ = K.shape
     _K = np.zeros((M*V, M*V))
     for i in range(M):
@@ -73,6 +154,36 @@ def get_4d_matrix_as_2d_block(K):
     return _K
 
 def get_contribution_matrix(K,return_eigenvector_too=False):
+    """
+    Compute a contribution matrix from a next generation matrix.
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+    return_eigenvector_too : boolean, default = False
+        If true, return the normalized eigenvector
+        corresponding to the spectral radius of `K`, as well
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``M, M, V, V``
+        The system's contribution matrix.
+        Entry ``C[i,j,v,w]`` contains the average number
+        of `(j,w)`-induced `(i,v)`-offspring during exponential
+        growth / decay.
+
+    optional additional returns
+    ===========================
+    y : numpy.ndarray of shape ``M, V``
+        The system's eigenstate that will be approached
+        within a few generations. Entry ``y[i,v]`` contains
+        the relative number of `(i,v)`-individuals in this
+        population.
+
+    """
 
     M, _, V, __ = K.shape
     _K = get_4d_matrix_as_2d_block(K)
@@ -87,6 +198,36 @@ def get_contribution_matrix(K,return_eigenvector_too=False):
         return C
 
 def get_2d_contribution_matrix(K,return_eigenvector_too=False):
+    """
+    Get the contribution matrix corresponding to a
+    2D next generation matrix.
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``N, N``
+        Next generation matrix.
+        Entry ``K[i,j]`` contains the average `i`-offspring
+        of a single `j`-individual.
+    return_eigenvector_too : boolean, default = False
+        If true, return the normalized eigenvector
+        corresponding to the spectral radius of `K`, as well
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``N, N``
+        The system's contribution matrix.
+        Entry ``C[i,j]`` contains the average number
+        of `j`-induced `i`-offspring during exponential
+        growth / decay.
+
+    optional additional returns
+    ===========================
+    y : numpy.ndarray of shape ``N``
+        The system's eigenstate that will be approached
+        within a few generations. Entry ``y[i]`` contains
+        the relative number of `i`-individuals in this
+        population.
+    """
 
     R, y = get_spectral_radius_and_eigenvector(K)
 
@@ -99,11 +240,53 @@ def get_2d_contribution_matrix(K,return_eigenvector_too=False):
 
 
 def get_reduced_contribution_matrix(K):
+    """
+    Get the reduced contribution matrix of a covid variant
+    (where populations were summed out and only
+    vaccination stati remain).
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``V, V``
+        The system's contribution matrix.
+        Entry ``C[v,w]`` contains the average number
+        of `w`-induced `v`-offspring during exponential
+        growth / decay.
+    """
     C = get_contribution_matrix(K)
     C = C.sum(axis=0).sum(axis=0)
     return C
 
 def get_reduced_vaccinated_susceptible_contribution_matrix(K):
+    """
+    Get the reduced contribution matrix of a covid variant
+    where populations were summed over and active vaccination
+    statuses where summed over, as well, such that only vaccinated/
+    not vaccinated remains.
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``2, 2``
+        The system's contribution matrix.
+        Entry ``C[v,w]`` contains the average number
+        of `w`-induced `v`-offspring during exponential
+        growth / decay where `w` and `v` can be either
+        'vaccinated' or 'not vaccinated'
+    """
     C = get_reduced_contribution_matrix(K)
     _C = np.zeros((2,2))
     _C[0,0] = C[0,0]
@@ -113,20 +296,98 @@ def get_reduced_vaccinated_susceptible_contribution_matrix(K):
     return _C
 
 def get_reduced_population_contribution_matrix(K):
+    """
+    Get the reduced contribution matrix of a covid variant
+    (where vaccination stati were summed out and only
+    population groups remain).
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``M, M``
+        The system's contribution matrix.
+        Entry ``C[i,j]`` contains the average number
+        of `i`-induced `j`-offspring during exponential
+        growth / decay.
+    """
     C = get_contribution_matrix(K)
     C = C.sum(axis=-1).sum(axis=-1)
     return C
 
 def get_eigenvector(K):
+    """
+    The system's eigenstate that will be approached within
+    a few generations.
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+
+    Returns
+    =======
+    y : numpy.ndarray of shape ``M, V``
+        The system's eigenstate that will be approached
+        within a few generations. Entry ``y[i,v]`` contains
+        the relative number of `(i,v)`-individuals in the
+        total population.
+    """
     _, y = get_contribution_matrix(K,return_eigenvector_too=True)
     return y
 
 def get_reduced_vaccinated_susceptible_eigenvector(K):
+    """
+    The system's eigenstate that will be approached within
+    a few generations.
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+
+    Returns
+    =======
+    y : numpy.ndarray of length``V``
+        The system's eigenstate that will be approached
+        within a few generations. Entry ``y[v]`` contains
+        the relative number of `v`-individuals in the
+        total population.
+    """
     _, y = get_contribution_matrix(K,return_eigenvector_too=True)
     y = y.sum(axis=0)
     return y
 
 def get_reduced_population_eigenvector(K):
+    """
+    The system's eigenstate that will be approached within
+    a few generations, where vaccination stati where.
+    summed over.
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+
+    Returns
+    =======
+    y : numpy.ndarray of shape ``M``
+        The system's eigenstate that will be approached
+        within a few generations. Entry ``y[i]`` contains
+        the relative number of `i`-individuals in the
+        total population.
+    """
     _, y = get_contribution_matrix(K,return_eigenvector_too=True)
     y = y.sum(axis=-1)
     return y

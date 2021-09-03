@@ -95,7 +95,7 @@ def get_next_generation_matrix_covid(R0,variant='alpha'):
     Returns
     =======
     K : numpy.ndarray of shape ``M, M, V, V``
-        Next generation matrix..
+        Next generation matrix.
         Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
         of a single `(j,w)`-individual.
     """
