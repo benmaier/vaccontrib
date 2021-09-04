@@ -56,7 +56,7 @@ def get_susceptibility_reduction(fn=None,
     Load susceptibility reduction values from a file. File must have
     structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,no,astra,biontech,moderna,jj
         [00;12),0,0.73,0.92,0.92,0.73
@@ -102,7 +102,7 @@ def get_transmissibility_reduction(fn=None,
     Load transmissibility reduction values from a file. File must have
     structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,no,astra,biontech,moderna,jj
         [00;12),0,0.73,0.92,0.92,0.73
@@ -146,7 +146,7 @@ def get_relative_recovery_rate(fn=None,
     Load relative recovery rate values from a file. File must have
     structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,no,astra,biontech,moderna,jj
         [00;12),1,0.73,0.92,0.92,0.73
@@ -191,7 +191,7 @@ def get_relative_infection_rate(fn=None,
     Load relative infection rate values from a file. File must have
     structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,no,astra,biontech,moderna,jj
         [00;12),1,0.73,0.92,0.92,0.73
@@ -235,7 +235,7 @@ def get_population_sizes(fn=None,
     Load sizes of single populations groups from a file.
     File must have structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,number
         [00;12),9137232
@@ -277,7 +277,7 @@ def get_fraction_vaccinated(fn=None,
     population group from a file. File must have
     structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,fraction_vaccinated
         [00;12),0.
@@ -320,7 +320,7 @@ def get_vaccine_fractions(fn=None,
     group from a file.
     File must have structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,biontech,astra,moderna,jj
         [00;12),0,0,0,0
@@ -359,7 +359,7 @@ def get_contact_matrix(fn=None,
     Load the contact matrix from a file.
     File must have structure like this.
 
-    .. code:: csv
+    .. code::
 
         ages,[00;12),[12;18),[18;60),[60;oo)
         [00;12),2.8394495,0.5205262,3.235192,0.6269835
