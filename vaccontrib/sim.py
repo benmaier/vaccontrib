@@ -20,14 +20,14 @@ except ModuleNotFoundError as e: # pragma: no cover
 from vaccontrib.mock_samplable_set import choice as _choice
 from collections import Counter
 
-from vaccontrib.main import get_2d_contribution_matrix
+from vaccontrib.main import get_2d_contribution_matrix, convert_4d_matrix_to_2d_block
 
 
 class LinearSystem():
     """
     Object to simulate linear growth/decay as defined
     by a matrix of reproduction rates and a vector
-    of decay rates
+    of decay rates.
 
     Parameters
     ==========
@@ -101,7 +101,8 @@ class LinearSystem():
         self.set_rate_matrices(reproduction_rate_matrix, decay_rate_vector)
         self.set_initial_conditions(initial_conditions)
 
-    def set_rate_matrices(self, reproduction_rate_matrix, decay_rate_vector):
+
+    def set_rate_matrices(self, reproduction_rate_matrix, decay_rate_vector=None):
         """
         Define the system via a reproduction rate matrix and
         a decay rate matrix.
@@ -117,8 +118,11 @@ class LinearSystem():
             of a single `i`-individual
         """
 
+
         shape = reproduction_rate_matrix.shape
         assert(shape[0] == shape[1])
+        if decay_rate_vector is None:
+            decay_rate_vector = np.zeros(shape[0])
         assert(shape[0] == decay_rate_vector.shape[0])
         assert(not np.any(decay_rate_vector<=0))
         assert(np.all(reproduction_rate_matrix>=0))
@@ -132,13 +136,13 @@ class LinearSystem():
         self.B = np.array(decay_rate_vector).astype(np.float64)
         self.N = len(decay_rate_vector)
 
-        self.K = A / B[None,:]
+        self.K = self.A / self.B[None,:]
         self.C, self.y = get_2d_contribution_matrix(self.K,return_eigenvector_too=True)
 
         self.total_rates = reproduction_rate_matrix.sum(axis=0).flatten() + decay_rate_vector
         self.state_rates = np.vstack((self.A,self.B)).T
 
-        print(self.state_rates)
+        #print(self.state_rates)
         assert(np.all(self.state_rates.sum(axis=1)==self.total_rates))
 
         self.state_events = []
@@ -150,9 +154,9 @@ class LinearSystem():
                 S[j] = self.state_rates[i][j]
             self.state_events.append(S)
 
-        for ievent, events in enumerate(self.state_events):
-            print(ievent)
-            print([item for item in events])
+        #for ievent, events in enumerate(self.state_events):
+        #    print(ievent)
+        #    print([item for item in events])
 
 
     def set_initial_conditions(self, initial_conditions=20):
@@ -174,7 +178,7 @@ class LinearSystem():
         max_weight = self.total_rates.max()
 
         if not hasattr(initial_conditions,'__len__'):
-            self.y0 = (self.y * 20).astype(np.int32)
+            self.y0 = (self.y * initial_conditions).astype(np.int32)
         else:
             self.y0 = np.array(initial_conditions).astype(np.int32)
 
@@ -220,7 +224,7 @@ class LinearSystem():
         t : list of float
             time points at which events happened
         y : list of int
-            total number of "alive" individuals as time points
+            total number of "alive" individuals at time points
             corresponding to ``t``.
         counters : list of tuple of (int, :class:`collections.Counter`)
             Each entry of this list contains the offspring count
@@ -459,14 +463,14 @@ def get_mean_next_generation_matrix_from_simulation(N,counters):
 
     total_offspring = 0
     for state, counter in counters:
-        #for reproduced_state, count in counter.items():
         for reproduced_state in range(N):
             K[reproduced_state][state].append(counter[reproduced_state])
 
-    _K = [ [ np.mean(K[j][i]) for i in range(N) ] for j in range(N) ]
+    _K = [ [ np.mean(K[j][i]) if len(K[j][i])>0 else 0 for i in range(N) ] for j in range(N) ]
     _K = np.array(_K)
 
     return _K
+
 
 def get_mean_eigenstate_from_simulation(N, counters):
     """
@@ -490,7 +494,6 @@ def get_mean_eigenstate_from_simulation(N, counters):
             ( state, Counter({ 
                                 offspring_state_0 : 3,
                                 offspring_state_1 : 2,
-                                ...
                             })
             )
         
@@ -517,6 +520,68 @@ def get_mean_eigenstate_from_simulation(N, counters):
     return y
 
 
+def convert_4d_next_generation_matrix_and_relative_recovery_rates_for_simulation(K,b):
+    """
+    Get rate matrix and recovery rates from 4D
+    next generation matrix and 2D recovery rates
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``M, M, V, V``
+        Next generation matrix.
+        Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
+        of a single `(j,w)`-individual.
+    b : numpy.ndarray of shape ``M x V``
+        relative recovery rate,
+        Entry ``relative_recovery_rate[m,v]`` contains the
+        recovery rate of individuals of
+        vaccination status `v` and population group `m` relative
+        to some base rate.
+
+    Returns
+    =======
+    reproduction_rate_matrix : numpy.ndarray of shape ``(M*V) x (M*V)``
+        A matrix whose entry ``reproduction_rate_matrix[i,j]``
+        contains the average `i`-offspring of a single "alive"
+        `j`-individual per unit time.
+    decay_rate_vector : numpy.ndarray of length ``M*V``
+        Entry ``decay_rate_vector[i]`` contains the death rate
+        of a single `i`-individual
+    """
+    K_ = convert_4d_matrix_to_2d_block(K)
+    b_ = b.flatten()
+    return convert_next_generation_matrix_and_relative_recovery_rates_for_simulation(K_, b_)
+
+
+def convert_next_generation_matrix_and_relative_recovery_rates_for_simulation(K,b):
+    """
+    Get rate matrix and recovery rates from
+    next generation matrix and recovery rates
+
+    Parameters
+    ==========
+    K : numpy.ndarray of shape ``N, N``
+        Next generation matrix.
+        Entry ``K[i,j]`` contains the average `i`-offspring
+        of a single `j`-individual.
+    b : numpy.ndarray of length ``N``
+        Entry ``b[i]`` contains the death rate
+        of a single `i`-individual
+
+
+    Returns
+    =======
+    reproduction_rate_matrix : numpy.ndarray of shape ``N x N``
+        A matrix whose entry ``reproduction_rate_matrix[i,j]``
+        contains the average `i`-offspring of a single "alive"
+        `j`-individual per unit time.
+    decay_rate_vector : numpy.ndarray of length ``N``
+        Entry ``decay_rate_vector[i]`` contains the death rate
+        of a single `i`-individual
+    """
+    Binv = np.diag(b)
+    A = K.dot(Binv)
+    return A, b
 
 if __name__=="__main__":
 

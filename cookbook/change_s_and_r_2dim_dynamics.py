@@ -1,7 +1,7 @@
 from vaccontrib.covid import get_reduced_vaccinated_susceptible_contribution_matrix_covid, get_reduced_population_contribution_matrix_covid
 
 from vaccontrib.covid import get_next_generation_matrix_covid
-from vaccontrib.main import get_reduced_vaccinated_susceptible_eigenvector, get_reduced_vaccinated_susceptible_contribution_matrix, get_next_generation_matrix_from_matrices, get_4d_matrix_as_2d_block
+from vaccontrib.main import get_reduced_vaccinated_susceptible_eigenvector, get_reduced_vaccinated_susceptible_contribution_matrix, get_next_generation_matrix_from_matrices, convert_4d_matrix_to_2d_block
 
 from vaccontrib.linalg import get_spectral_radius_and_eigenvector
 
@@ -40,13 +40,13 @@ y1 = get_reduced_vaccinated_susceptible_eigenvector(K1)
 C1 = get_reduced_vaccinated_susceptible_contribution_matrix(K1)
 
 
-_K0 = get_4d_matrix_as_2d_block(K0)
-_K1 = get_4d_matrix_as_2d_block(K1)
+_K0 = convert_4d_matrix_to_2d_block(K0)
+_K1 = convert_4d_matrix_to_2d_block(K1)
 _, y0_full = get_spectral_radius_and_eigenvector(_K0)
 _, y1_full = get_spectral_radius_and_eigenvector(_K1)
 
 print("K_reduced =\n", K0.sum(axis=0).sum(axis=0))
-print("K =\n", get_4d_matrix_as_2d_block(K0))
+print("K =\n", convert_4d_matrix_to_2d_block(K0))
 print("C =\n", C0)
 print("y_reduced =\n", y0)
 print("y0_full =\n", y0_full)
@@ -55,7 +55,7 @@ print("C_normed =\n", C0/C0.sum())
 print()
 #print("with R =", R1)
 print("K_reduced =\n", K1.sum(axis=0).sum(axis=0))
-print("K =\n", get_4d_matrix_as_2d_block(K1))
+print("K =\n", convert_4d_matrix_to_2d_block(K1))
 print("C =\n", C1)
 print("y_reduced =\n", y1)
 print("y0_full =\n", y1_full)

@@ -5,7 +5,10 @@ and other things surrounding those.
 """
 
 import numpy as np
-from vaccontrib.linalg import get_spectral_radius_and_eigenvector
+from vaccontrib.linalg import (
+            get_spectral_radius_and_eigenvector,
+            convert_4d_matrix_to_2d_block,
+        )
 
 def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
     """
@@ -144,15 +147,6 @@ def get_homogeneous_contribution_matrix(R0,v,r,s):
 
     return C
 
-def get_4d_matrix_as_2d_block(K):
-    """Convert a 4D matrix of shape ``M, M, V, V`` to a block matrix of shape ``M*V, M*V``"""
-    M, _, V, __ = K.shape
-    _K = np.zeros((M*V, M*V))
-    for i in range(M):
-        for j in range(M):
-            _K[i*V:(i+1)*V,j*V:(j+1)*V] = K[i,j,:,:]
-    return _K
-
 def get_contribution_matrix(K,return_eigenvector_too=False):
     """
     Compute a contribution matrix from a next generation matrix.
@@ -186,7 +180,7 @@ def get_contribution_matrix(K,return_eigenvector_too=False):
     """
 
     M, _, V, __ = K.shape
-    _K = get_4d_matrix_as_2d_block(K)
+    _K = convert_4d_matrix_to_2d_block(K)
     R, y = get_spectral_radius_and_eigenvector(_K)
     y = y.reshape(M,V)
 
