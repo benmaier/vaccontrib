@@ -22,7 +22,9 @@ from .main import (
         get_reduced_vaccinated_susceptible_contribution_matrix,
         get_reduced_population_contribution_matrix,
         get_homogeneous_contribution_matrix,
+        get_homogeneous_next_generation_matrix,
         get_eigenvector,
+        get_homogeneous_eigenvector,
         get_reduced_vaccinated_susceptible_eigenvector,
         get_reduced_population_eigenvector,
     )

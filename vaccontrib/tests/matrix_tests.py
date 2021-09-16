@@ -3,9 +3,8 @@ import unittest
 import numpy as np
 
 from vaccontrib.covid import get_next_generation_matrix_covid
-from vaccontrib.linalg import get_spectral_radius_and_eigenvector
+from vaccontrib.linalg import get_spectral_radius_and_eigenvector, convert_4d_matrix_to_2d_block
 from vaccontrib.main import (
-                get_4d_matrix_as_2d_block,
                 get_next_generation_matrix_from_matrices,
                 get_reduced_contribution_matrix,
                 get_contribution_matrix,
@@ -66,7 +65,7 @@ class NextGenMatrixTest(unittest.TestCase):
         R0 = 4
 
         K = get_next_generation_matrix_from_matrices(R0,gamma,S,N,s,r,a,b)
-        K1 = get_4d_matrix_as_2d_block(K)
+        K1 = convert_4d_matrix_to_2d_block(K)
 
         M, _, V, __ = K.shape
         rows = []
@@ -93,7 +92,7 @@ class NextGenMatrixTest(unittest.TestCase):
 
         K = get_next_generation_matrix_from_matrices(R0,gamma,S,N,s,r,a,b)
 
-        K = get_4d_matrix_as_2d_block(K)
+        K = convert_4d_matrix_to_2d_block(K)
         R, y = get_spectral_radius_and_eigenvector(K)
 
         assert(np.isclose(R0,R))
@@ -111,7 +110,7 @@ class NextGenMatrixTest(unittest.TestCase):
 
         K = get_next_generation_matrix_from_matrices(R0,gamma,S,N,s,r,a,b)
 
-        K = get_4d_matrix_as_2d_block(K)
+        K = convert_4d_matrix_to_2d_block(K)
         R, y = get_spectral_radius_and_eigenvector(K)
 
         assert(np.isclose(R0,R))
@@ -140,7 +139,7 @@ class NextGenMatrixTest(unittest.TestCase):
         _v = 0.69
         _s = 0.85
         _r = 0.5
-        R0 = [1.,4.]
+        R0 = [2.234,4.]
 
         gamma = np.array([[1.]])
         S = np.array([[1-_v,_v]])

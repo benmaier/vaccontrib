@@ -511,8 +511,11 @@ def get_homogeneous_vaccination_parameters(
         r = get_transmissibility_reduction(variant=variant)[1:,1:]
 
     M, V = s.shape
+    M += 1
+    V += 1
 
     S = np.zeros((M, V))
+
     S[:,0] = population * (1-fraction_vaccinated)
     S[:,1:] = (population * fraction_vaccinated)[:,None] * vaccine_fractions
     S_vacc = S[1:,1:]

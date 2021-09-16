@@ -98,12 +98,59 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
 
     return K
 
-def get_homogeneous_contribution_matrix(R0,v,r,s):
+def get_homogeneous_next_generation_matrix(R0,v,s,r):
     """
-    Construct a next generation matrix from a bunch of
-    matrices defining SIR dynamics in a homogeneous
+    Construct a next generation matrix for a homogeneous
     population with two vaccination stati (not vaccinated,
-    vaccinated)
+    vaccinated).
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    v : float
+        Fraction of individuals that are vaccinated
+    s : float
+        Susceptibility reduction of vaccine
+    r : float
+        transmissibility reduction of vaccine
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``2, 2``
+        The system's contribution matrix.
+        Entry ``C[v,w]`` contains the average number
+        of `w`-induced `v`-offspring during exponential
+        growth / decay where `w` and `v` can be either
+        'vaccinated' or 'not vaccinated'
+    """
+
+    if not hasattr(R0,'__len__'):
+        _R = np.ones(2) * R0
+    else:
+        _R = np.array(R0,dtype=np.float64)
+
+    assert(_R.ndim==1)
+
+    _S = 0
+    _V = 1
+
+    K = np.zeros((2,2))
+
+    K[_S,_S] = (1-v) * _R[_S]
+    K[_S,_V] = (1-v) * (1-r) * _R[_V]
+    K[_V,_S] = v * (1-s) * _R[_S]
+    K[_V,_V] = v * (1-s) * (1-r) * _R[_V]
+
+    return K
+
+def get_homogeneous_contribution_matrix(R0,v,s,r):
+    """
+    Construct a contribution matrix for a homogeneous
+    population with two vaccination stati (not vaccinated,
+    vaccinated).
 
     Parameters
     ==========
@@ -140,12 +187,45 @@ def get_homogeneous_contribution_matrix(R0,v,r,s):
 
     C = np.zeros((2,2))
 
-    C[_S,_S] = (1-v)**2/(1-v*s) * _R[_S]
-    C[_S,_V] = v*(1-v)*(1-s)*(1-r)/(1-v*s) * _R[_V]
-    C[_V,_S] = v*(1-v)*(1-s)/(1-v*s) * _R[_S]
-    C[_V,_V] = v**2 * (1-s)**2 * (1-r)/(1-v*s) * _R[_V]
+    C[_S,_S] = (1-v) * (1-v)/(1-v*s) * _R[_S]
+    C[_S,_V] = (1-v) * (v*(1-s)/(1-v*s)) * (1-r) * _R[_V]
+    C[_V,_S] = v * (1-v)/(1-v*s) * (1-s) * _R[_S]
+    C[_V,_V] = v * ( v*(1-s)/(1-v*s)) * (1-s) * (1-r) * _R[_V]
 
     return C
+
+def get_homogeneous_eigenvector(v,s):
+    """
+    Construct a population eigenvector for a homogeneous
+    population with two vaccination stati (not vaccinated,
+    vaccinated).
+
+    Parameters
+    ==========
+    v : float
+        Fraction of individuals that are vaccinated
+    s : float
+        Susceptibility reduction of vaccine
+
+    Returns
+    =======
+    C : numpy.ndarray of shape ``2, 2``
+        The system's contribution matrix.
+        Entry ``C[v,w]`` contains the average number
+        of `w`-induced `v`-offspring during exponential
+        growth / decay where `w` and `v` can be either
+        'vaccinated' or 'not vaccinated'
+    """
+
+    _S = 0
+    _V = 1
+
+    y = np.zeros(2)
+
+    y[_S] = (1-v)/(1-v*s)
+    y[_V] = v*(1-s)/(1-v*s)
+
+    return y
 
 def get_contribution_matrix(K,return_eigenvector_too=False):
     """
