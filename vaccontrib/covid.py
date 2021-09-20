@@ -13,6 +13,10 @@ from vaccontrib import (
             get_reduced_contribution_matrix,
             get_reduced_vaccinated_susceptible_contribution_matrix,
             get_reduced_population_contribution_matrix,
+            get_eigenvector,
+            get_homogeneous_eigenvector,
+            get_homogeneous_contribution_matrix,
+            get_homogeneous_next_generation_matrix,
         )
 
 def get_covid_matrices(variant='alpha'):
@@ -79,6 +83,8 @@ def get_covid_matrices(variant='alpha'):
             }
 
 
+# ================= NGM ===================
+
 def get_next_generation_matrix_covid(R0,variant='alpha'):
     """
     Get the next generation matrix of a covid variant.
@@ -103,6 +109,8 @@ def get_next_generation_matrix_covid(R0,variant='alpha'):
     K = get_next_generation_matrix_from_matrices(R0, **matrices)
 
     return K
+
+# ================== CONTRIB ===============
 
 def get_contribution_matrix_covid(R0,variant='alpha'):
     """
@@ -211,6 +219,194 @@ def get_reduced_population_contribution_matrix_covid(R0,variant='alpha'):
     K = get_next_generation_matrix_covid(R0,variant)
     C = get_reduced_population_contribution_matrix(K)
     return C
+
+# ================== EIGENVEC ===============
+
+def get_eigenvector_covid(R0,variant='alpha'):
+    """
+    Get the population eigenvector for a covid variant.
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    variant : string, default = 'alpha'
+        load data for a covid variant from the package data
+
+    Returns
+    =======
+    y : numpy.ndarray of shape ``M, V``
+        The system's population eigenvector.
+        Entry ``y[i,v]`` contains the relative fraction
+        of `(i,v)`-individuals in the population.
+    """
+    K = get_next_generation_matrix_covid(R0,variant)
+    y = get_eigenvector(K)
+    return y
+
+def get_reduced_eigenvector_covid(R0,variant='alpha'):
+    """
+    Get the population eigenvector for a covid variant
+    (where populations were summed out and only
+    vaccination stati remain).
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    variant : string, default = 'alpha'
+        load data for a covid variant from the package data
+
+    Returns
+    =======
+    y : numpy.ndarray of shape ``V,``
+        The system's reduced vaccination status eigenvector.
+        Entry ``y[v]`` contains the fraction of
+        infected belonging to vaccination status v.
+    """
+    y = get_eigenvector_covid(R0,variant).sum(axis=0)
+    return C
+
+def get_reduced_vaccinated_susceptible_eigenvector_covid(R0,variant='alpha'):
+    """
+    Get the reduced population eigenvector for a covid variant
+    where populations were summed over and active vaccination
+    statuses where summed over, as well, such that only vaccinated/
+    not vaccinated remains.
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    variant : string, default = 'alpha'
+        load data for a covid variant from the package data
+
+    Returns
+    =======
+    y : numpy.ndarray of length ``2``
+        The system's reduced vaccinated susceptible eigenvector.
+        Entry ``y[v]`` contains the fraction of
+        infected belonging to vaccination status v
+        (0 = unvaccinated, 1 = vaccinated).
+    """
+    y = get_reduced_eigenvector_covid(R0,variant)
+    y = np.array([y[0], y[1:].sum()])
+    return y
+
+def get_reduced_population_eigenvector_covid(R0,variant='alpha'):
+    """
+    Get the reduced population eigenvector for a covid variant
+    (where vaccination stati were summed out and only
+    population groups remain).
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    variant : string, default = 'alpha'
+        load data for a covid variant from the package data
+
+    Returns
+    =======
+    y : numpy.ndarray of shape ``M``
+        The system's eigenvector in the population group-dimension.
+        Entry ``y[i]`` contains the fraction of
+        infected belonging to group i.
+    """
+    y = get_eigenvector_covid(R0,variant).sum(axis=1)
+    return y
+
+# ========== HOMOGENEOUS ===============
+
+def get_homogeneous_contribution_matrix_covid(R0,variant):
+    """
+    Get the unvaccinated/vaccinated contribution matrix
+    for a covid variant where fraction of
+    vaccinated, susceptiblity reduction,
+    and transmissibility reduction were all mapped
+    to corresponding values in a homogeneous system.
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    variant : string, default = 'alpha'
+        load data for a covid variant from the package data
+
+    Returns
+    =======
+    C_hom : numpy.ndarray of length ``2, 2``
+        The homogeneous system's next generation matrix.
+        Entry ``C[v,w]`` contains the average number of
+        `w`-induced `v`-offspring during exponential
+        growth/decay.
+    """
+    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant)
+    C_hom = get_homogeneous_contribution_matrix(R0, v, s, r)
+    return C_hom
+
+def get_homogeneous_next_generation_matrix_covid(R0,variant):
+    """
+    Get the unvaccinated/vaccinated next generation matrix
+    for a covid variant where fraction of
+    vaccinated, susceptiblity reduction,
+    and transmissibility reduction were all mapped
+    to corresponding values in a homogeneous system.
+
+    Parameters
+    ==========
+    R0 : float or list of float
+        either global reproduction number or a vector
+        of reproduction number values, each for in-
+        dividuals of a different vaccination status.
+    variant : string, default = 'alpha'
+        load data for a covid variant from the package data
+
+    Returns
+    =======
+    K_hom : numpy.ndarray of length ``2, 2``
+        The homogeneous system's next generation matrix.
+        Entry ``K[v,w]`` contains the average `v`-offspring
+        of a single `w`-individual.
+    """
+    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant)
+    K_hom = get_homogeneous_next_generation_matrix(R0, v, s, r)
+    return K_hom
+
+def get_homogeneous_eigenvector_covid(variant):
+    """
+    Get the unvaccinated/vaccinated eigenvector
+    for a covid variant where fraction of
+    vaccinated, susceptiblity reduction,
+    and transmissibility reduction were all mapped
+    to corresponding values in a homogeneous system.
+
+    Parameters
+    ==========
+    variant : string, default = 'alpha'
+        load data for a covid variant from the package data
+
+    Returns
+    =======
+    y_hom : numpy.ndarray of length ``2``
+        The homogeneous system's eigenvector.
+        Entry ``y[v]`` contains the fraction of
+        infected belonging to vaccination status v
+        (0 = unvaccinated, 1 = vaccinated).
+    """
+    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant)
+    y_hom = get_homogeneous_eigenvector(v, s)
+    return y_hom
 
 if __name__=="__main__":
 
