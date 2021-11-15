@@ -152,7 +152,7 @@ class NextGenMatrixTest(unittest.TestCase):
         K1 = get_next_generation_matrix_from_matrices(R0,gamma,S,N,s,r,a,b)
         C1 = get_reduced_vaccinated_susceptible_contribution_matrix(K1)
 
-        C2 = get_homogeneous_contribution_matrix(R0, _v, _r, _s)
+        C2 = get_homogeneous_contribution_matrix(R0, _v, _s, _r)
 
         assert(np.all(np.isclose(C1,C2)))
 
