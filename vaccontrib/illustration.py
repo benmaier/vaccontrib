@@ -212,7 +212,47 @@ class CircleCapSegmentPresentation():
 
         return self
 
-class CircleCapSegmentPresentationConstR():
+    def plot(self,
+             ax=None,
+             upper_color=None,
+             lower_color=None,
+             brighter_base=2,
+             ec='w',
+             linewidth=0.5,
+             figsize=(6,6),
+             ):
+
+        if upper_color is None:
+            self.upper_color = bp.epipack[1]
+        else:
+            self.upper_color = upper_color
+        if lower_color is None:
+            self.lower_color = bp.epipack[2]
+        else:
+            self.upper_color = upper_color
+        self.upper_brighter = bp.brighter(self.upper_color, brighter_base)
+        self.lower_brighter = bp.brighter(self.lower_color, brighter_base)
+
+        if ax is None:
+            fig, ax = pl.subplots(1,1,figsize=figsize)
+
+        def _plot(geom, color, ec=None, linewidth=None):
+            xs, ys = geom.exterior.xy
+            ax.fill(xs, ys, fc=color, ec=ec, linewidth=linewidth)
+
+        for geom, color in [
+                (self.segs.seg00, self.upper_color),
+                (self.segs.seg01, self.upper_brighter),
+                (self.segs.seg10, self.lower_color),
+                (self.segs.seg11, self.lower_brighter),
+            ]:
+            if geom.area > 0:
+                _plot(geom, color, ec=ec, linewidth=linewidth)
+
+        return ax
+
+
+class CircleCapSegmentPresentationConstR(CircleCapSegmentPresentation):
 
     def __init__(self,C,r=1,w=1/10,circle_resolution=_BASE_CIRCLE_RESOLUTION):
 
@@ -329,18 +369,21 @@ class JoinedVectorAndMatrixPresentation():
 
         return ax
 
-    def add_arrows_to_plot(self, lw=1.5):
+    def add_arrows_to_plot(self, lw=1.5, symmetrical_arrows=True):
 
         d = self.w
         arrowwidth = self.w*1.5
-        right_max = max(self.r_caps, self.r_segs) + 2*self.w
-        left_max = right_max + 2*self.w
-        left_max = -max(self.r_caps, self.r_segs) - 2*self.w
+        if not symmetrical_arrows:
+            left_max = right_max - 2*self.w
+            right_max = max(self.r_caps, self.r_segs) + 4*self.w
+        else:
+            left_max = -max(self.r_caps, self.r_segs) - 2*self.w
+            right_max = max(self.r_caps, self.r_segs) + 2*self.w
 
         first_set = { 'cap': self.cap0, 'seg0': self.seg00, 'seg1': self.seg10, 'max': left_max, 'color': self.upper_brighter }
         second_set = { 'cap': self.cap1, 'seg0': self.seg01, 'seg1': self.seg11, 'max': right_max, 'color': self.lower_brighter }
         capfactors = [+1,-1]
-        segfactors = [3,3]
+        segfactors = [4,1]
         zorders = [0,0]
 
         distance_between_circles = 2*self.r_caps
@@ -357,8 +400,10 @@ class JoinedVectorAndMatrixPresentation():
             xseg1, yseg1 = _find_mean_x_and_y_of_focused_edge_x(_set['seg1'])
             yseg1 -= sfac*d
 
-            xseg0, yseg0 = _set['seg0'].centroid.coords[0]
-            xseg1, yseg1 = _set['seg1'].centroid.coords[0]
+            if symmetrical_arrows:
+                xseg0, yseg0 = _set['seg0'].centroid.coords[0]
+                xseg1, yseg1 = _set['seg1'].centroid.coords[0]
+
             xstart0 = xcap-cfac*d
 
             base_coords = [
@@ -381,26 +426,65 @@ class JoinedVectorAndMatrixPresentation():
             x, y = zip(*(base_coords+low_coords))
             self.ax.plot(x, y, zorder=zorder, color=_set['color'], lw=lw)
 
+            if not symmetrical_arrows and cfac == 1:
+                arr_fac = -cfac
+            else:
+                arr_fac = cfac
+
             arrow_one = [
                             (_set['max'], yseg1),
-                            (_set['max']+cfac*arrowwidth*1.5, yseg1),
+                            (_set['max']+arr_fac*arrowwidth*1.5, yseg1),
                             (_set['max'], yseg1+0.5*arrowwidth),
                         ]
             arrow_two = [
-                            (_set['max'], yseg0), #half arrow
+                            #(_set['max'], yseg0), #half arrow
                             (_set['max'], yseg0 - 0.5*arrowwidth), #full arrow
-                            (_set['max']+cfac*arrowwidth*1.5, yseg0),
+                            (_set['max']+arr_fac*arrowwidth*1.5, yseg0),
                             (_set['max'], yseg0+0.5*arrowwidth),
                         ]
+            offset = -cfac*arrowwidth*.5 #set this to 0 for full arrow, not half arrow
             arrow_three = [
                             (xstart0+cfac*arrowwidth*.5, ycap,),
                             (xstart0+cfac*arrowwidth*.5, -1.1*self.r_caps),
                             (xstart0, -1.1*self.r_caps-2*arrowwidth),
-                            (xstart0, ycap),
+                            (xstart0+offset, -1.1*self.r_caps),
+                            (xstart0+offset, ycap),
                     ]
             for arrow in [arrow_one, arrow_two, arrow_three]:
                 xs, ys = zip(*arrow)
                 self.ax.fill(xs, ys, fc=_set['color'], ec='None',zorder=-1)
+
+    def add_text_to_plot(self):
+
+        d = self.w
+        arrowwidth = self.w*1.5
+        right_max = max(self.r_caps, self.r_segs) + 4*self.w
+
+        first_set = { 'cap': self.cap0, 'seg0': self.seg00, 'seg1': self.seg10, 'color': self.upper_brighter }
+        second_set = { 'cap': self.cap1, 'seg0': self.seg01, 'seg1': self.seg11, 'color': self.lower_brighter }
+        capfactors = [+1,-1]
+        segfactors = [4,1]
+        zorders = [0,0]
+
+        distance_between_circles = 2*self.r_caps
+        labels = {'cap': ['(u)nvacc','(v)acc']}
+        labels = {'cap': ['u','v']}
+
+        vas = ['bottom', 'top']
+
+        for i, (cfac, sfac, _set, zorder, va) in enumerate(zip(capfactors, segfactors, [first_set, second_set], zorders, vas)):
+
+            # deal with left arrow#
+            _x0, _x1, _y = _find_focused_edge_x(_set['cap'])
+            xdist = _x1
+            xcap, ycap = _find_mean_x_and_y_of_focused_edge_x(_set['cap'])
+            ycap += cfac*d
+            xseg0, yseg0 = _find_mean_x_and_y_of_focused_edge_x(_set['seg0'])
+            yseg0 += sfac*d
+            xseg1, yseg1 = _find_mean_x_and_y_of_focused_edge_x(_set['seg1'])
+            yseg1 -= sfac*d
+
+            self.ax.text(xcap, ycap, labels['cap'][i], transform=self.ax.transData, color='w', ha='center',va=va, fontstyle='italic')
 
 def get_circular_vector_and_matrix_presentation(y, C, r=1, w=0.1):
 
@@ -480,6 +564,12 @@ if __name__ == "__main__":
     ax = pres.plot(figsize=(6,6))
     ax.axis('off')
     pres.add_arrows_to_plot()
+    pres.add_text_to_plot()
     ax.get_figure().savefig('a.pdf')
+
+
+    segsonly = CircleCapSegmentPresentation(C,area=C.sum())
+    segsonly.compute()
+    ax = segsonly.plot()
 
     pl.show()
