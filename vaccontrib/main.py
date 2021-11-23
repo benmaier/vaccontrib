@@ -76,8 +76,10 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
 
     a0 = a[:,0]
     b0 = b[:,0]
+    s0 = s[:,0]
+    r0 = r[:,0]
 
-    K0 = gamma.dot(np.diag(a0)).dot(np.diag(1/b0))
+    K0 = np.diag(1-s0).dot(gamma).dot(np.diag(a0)).dot(np.diag(1-r0)).dot(np.diag(1/b0))
     rho0, _ = get_spectral_radius_and_eigenvector(K0)
 
     if not hasattr(R0,'__len__'):
@@ -85,7 +87,6 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
     else:
         R0 = np.array(R0,dtype=np.float64)
 
-            #np.sqrt(R0[None,None,None,:]*R0[None,None,:,None]) * \
     K = 1/rho0 * \
             R0[None,None,None,:] * \
             gamma[:,:,None,None] * \

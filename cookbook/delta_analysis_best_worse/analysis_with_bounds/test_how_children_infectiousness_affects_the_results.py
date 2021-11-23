@@ -30,11 +30,13 @@ uv_colors = [ colors[1][1], colors[0][0] ]
 
 matrices = get_covid_matrices('delta','01_upper',('no','vacc'))
 
-ms = np.linspace(1,0,41)
+reduction = np.linspace(1,0,41)
 n = len(ms)
 
 Cs = np.zeros((n, 2,2))
 Cunnormeds = np.zeros((n, 2,2))
+a0 = matrices['a']
+a0 = matrices['a']
 
 for im, m in enumerate(ms):
     mixing = np.array([
@@ -63,7 +65,7 @@ fig, axs = pl.subplots(1,2,figsize=(8,3))
 axs[0].plot(ms, Cs.sum(axis=1)[:,0],label='unvaccinated',c=uv_colors[0])
 axs[0].plot(ms, Cs.sum(axis=1)[:,1],label='vaccinated',c=uv_colors[1])
 axs[0].legend()
-axs[1].plot(ms, Cunnormeds.sum(axis=1)[:,0],label='unvaccinated',c=uv_colors[0])
+axs[1].plot(ms, Cunnormeds.sum(axis=1)[:,0],label='contrib. by unvaccinated',c=uv_colors[0])
 axs[1].plot(ms, Cunnormeds.sum(axis=1)[:,1],label='vaccinated',c=uv_colors[1])
 axs[1].plot(ms, Cunnormeds.sum(axis=1).sum(axis=1),label='total',c='k')
 axs[1].legend()
@@ -84,7 +86,7 @@ axs[1].set_ylabel('absolute contribution to $R/R(m=1)$ by')
 #axs[1].set_ylim([0,.5])
 
 fig.tight_layout()
-fig.savefig('mixing_analysis.png',dpi=300)
+fig.savefig('children_analysis.png',dpi=300)
 
 pl.show()
 

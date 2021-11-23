@@ -26,9 +26,28 @@ def get_root(Ru,dir='00_lower'):
 
 
 fig, ax = pl.subplots(1,1,figsize=(3.3,3))
+
+vec = []
 for i, _1mRu in tqdm(enumerate(_1_minus_Ru)):
     Rv_crit[i,0] = get_root(1-_1mRu,'00_lower')
     Rv_crit[i,1] = get_root(1-_1mRu,'01_upper')
+
+for i in range(2):
+    p = np.polyfit(_1_minus_Ru, 1-Rv_crit[:,i], 1)
+    ys = np.polyval(p,[0,1])
+    vec.append(
+        np.array([
+            1,
+            np.diff(ys),
+       ])
+    )
+
+for i in range(2):
+    vec[i] = np.array([[0,-1],[1,0]]).dot(vec[i])
+    vec[i] /= vec[i].sum()
+
+    print(['00_lower','01_upper'][i], vec[i])
+    print(['00_lower','01_upper'][i], vec[i][0]/vec[i][1])
 
 ax.plot(_1_minus_Ru,1-Rv_crit[:,0],color='k',ls='--',label='lower')
 ax.fill_between(_1_minus_Ru,np.zeros_like(Rv_crit[:,0]), 1-Rv_crit[:,0],color='k',alpha=0.1)

@@ -32,7 +32,7 @@ datavacc = np.array([
             [ 1_102,  66_396, 22_973 ],
         ],dtype=float)
 
-datay = datavacc.T
+datay = datavacc.copy().T
 datay[:,0] -= datay[:,1]
 datay = datay / datay.sum()
 
@@ -40,27 +40,29 @@ incidence_distribution_ages = [0.14710685, 0.09388042, 0.60214432, 0.15686842]
 
 if __name__ == "__main__":
     print(f"During the observation period, {datavacc[1,:].sum()/datavacc[0,:].sum()*100}% of symptomatic cases were breakthrough infections")
-    print(f"The relative frequency of breakthrough infections per age group were {datavacc[1]/datavacc[0]=} for age groups [12,18), [18, 60), and 60+")
+    print(f"The relative frequency of breakthrough infections per age group were {datavacc[1,:]/datavacc[0,:]=} for age groups [12,18), [18, 60), and 60+")
     print(f"The age distribution of new cases were 14.7%, 9.4%, 60.2%, and 15.7% for age groups [0,12), [12,18), [18, 60), and 60+")
     print(f"The normalized symptomatic COVID-19 population eigenvector, ignoring children and considerung vaccinated and unvaccinated populations, is given as")
     print(datay)
 
     print()
 
-parser = argparse.ArgumentParser(description='Compute contribution matrices.')
-parser.add_argument('directories', metavar='dirs', type=str, nargs='+',
-                    help='directories for which contributions matrices should be computed')
-parser.add_argument('-u', '--Ru', dest='Ru', type=float,
-                    help='Base R-value of unvaccinated',default=1)
-parser.add_argument('-v', '--Rv', dest='Rv', type=float,
-                    help='Base R-value of vaccinated',default=1)
+    parser = argparse.ArgumentParser(description='Compute contribution matrices.')
+    parser.add_argument('directories', metavar='dirs', type=str, nargs='+',
+                        help='directories for which contributions matrices should be computed')
+    parser.add_argument('-u', '--Ru', dest='Ru', type=float,
+                        help='Base R-value of unvaccinated',default=1)
+    parser.add_argument('-v', '--Rv', dest='Rv', type=float,
+                        help='Base R-value of vaccinated',default=1)
+    parser.add_argument('-f', '--save-figures', dest='save_figures', action='store_true',
+                        help='create, show, and save illustrations',default=False)
 
-args = parser.parse_args()
+    args = parser.parse_args()
+    R0 = [args.Ru, args.Rv]
 
 VACC = ('no', 'vacc')
 
 
-R0 = [args.Ru, args.Rv]
 
 def make_analysis(dirs,Ru, Rv, save_figures = False, R0=1.2, verbose=True):
 
@@ -116,6 +118,7 @@ def make_analysis(dirs,Ru, Rv, save_figures = False, R0=1.2, verbose=True):
             caps = CircleCapSegmentPresentation(C)
             caps.compute()
             ax = caps.plot()
+            ax.axis('off')
             ax.get_figure().savefig(f'caps_{data_dir}.pdf')
 
         C_full = get_contribution_matrix_covid(Rs,'delta',data_dir,vaccination_statuses=VACC)
@@ -133,6 +136,7 @@ def make_analysis(dirs,Ru, Rv, save_figures = False, R0=1.2, verbose=True):
 
     return resulting_Rs
 
-make_analysis(args.directories, args.Ru, args.Rv)
+if __name__=="__main__":
+    make_analysis(args.directories, args.Ru, args.Rv,args.save_figures)
 
-pl.show()
+    pl.show()

@@ -7,6 +7,7 @@ import csv
 import numpy as np
 
 from vaccontrib.paths import get_data_dir
+from pathlib import Path
 
 _POPULATIONS = ('[00;12)','[12;18)','[18;60)','[60;oo)')
 _VACC_STATUSES = ('no','astra','biontech','moderna','jj')
@@ -43,6 +44,7 @@ def _get_pop_vacc_csv(fn,
 
     rows = _dict_from_csvfile(fn)
     data = _array_from_dict(rows,populations,vaccination_statuses)
+    data = data.reshape(len(populations), len(vaccination_statuses))
 
     return data
 
@@ -51,6 +53,7 @@ def get_susceptibility_reduction(fn=None,
                                  variant='alpha',
                                  populations=_POPULATIONS,
                                  vaccination_statuses=_VACC_STATUSES,
+                                 data_dir=None,
                                  ):
     """
     Load susceptibility reduction values from a file. File must have
@@ -88,8 +91,11 @@ def get_susceptibility_reduction(fn=None,
 
 
 
+    if data_dir is None:
+        data_dir = get_data_dir()
+
     if fn is None:
-        fn = get_data_dir() / f'susceptibility_reduction_{variant}.csv'
+        fn = Path(data_dir) / f'susceptibility_reduction_{variant}.csv'
 
     return _get_pop_vacc_csv(fn, populations, vaccination_statuses)
 
@@ -97,6 +103,7 @@ def get_transmissibility_reduction(fn=None,
                                  variant='alpha',
                                  populations=_POPULATIONS,
                                  vaccination_statuses=_VACC_STATUSES,
+                                 data_dir=None,
                                  ):
     """
     Load transmissibility reduction values from a file. File must have
@@ -132,8 +139,11 @@ def get_transmissibility_reduction(fn=None,
         vaccination status `v` and population group `m`.
     """
 
+    if data_dir is None:
+        data_dir = get_data_dir()
+
     if fn is None:
-        fn = get_data_dir() / f'transmissibility_reduction_{variant}.csv'
+        fn = Path(data_dir) / f'transmissibility_reduction_{variant}.csv'
 
     return _get_pop_vacc_csv(fn, populations, vaccination_statuses)
 
@@ -141,6 +151,7 @@ def get_relative_recovery_rate(fn=None,
                                variant='alpha',
                                populations=_POPULATIONS,
                                vaccination_statuses=_VACC_STATUSES,
+                               data_dir=None,
                               ):
     """
     Load relative recovery rate values from a file. File must have
@@ -177,8 +188,11 @@ def get_relative_recovery_rate(fn=None,
         to some base rate.
     """
 
+    if data_dir is None:
+        data_dir = get_data_dir()
+
     if fn is None:
-        fn = get_data_dir() / f'relative_recovery_rate_{variant}.csv'
+        fn = Path(data_dir) / f'relative_recovery_rate_{variant}.csv'
 
     return _get_pop_vacc_csv(fn, populations, vaccination_statuses)
 
@@ -186,6 +200,7 @@ def get_relative_infection_rate(fn=None,
                                 variant='alpha',
                                 populations=_POPULATIONS,
                                 vaccination_statuses=_VACC_STATUSES,
+                                data_dir=None,
                                 ):
     """
     Load relative infection rate values from a file. File must have
@@ -222,14 +237,18 @@ def get_relative_infection_rate(fn=None,
         to some base rate.
     """
 
+    if data_dir is None:
+        data_dir = get_data_dir()
+
     if fn is None:
-        fn = get_data_dir() / f'relative_infection_rate_{variant}.csv'
+        fn = Path(data_dir) / f'relative_infection_rate_{variant}.csv'
 
     return _get_pop_vacc_csv(fn, populations, vaccination_statuses)
 
 def get_population_sizes(fn=None,
                          populations=_POPULATIONS,
                          header=('number',),
+                         data_dir=None,
                         ):
     """
     Load sizes of single populations groups from a file.
@@ -239,9 +258,9 @@ def get_population_sizes(fn=None,
 
         ages,number
         [00;12),9137232
-        [12;18),5339517
-        [18;60),46495023
-        [60;oo),20275029
+        [12;18)339517
+        [18;60),464023
+        [60;oo),202029
 
     Parameters
     ==========
@@ -263,14 +282,18 @@ def get_population_sizes(fn=None,
         size of population `m`.
     """
 
-    if fn is None:
-        fn = get_data_dir() / 'population.csv'
+    if data_dir is None:
+        data_dir = get_data_dir()
 
-    return _get_pop_vacc_csv(fn, populations, header)
+    if fn is None:
+        fn = Path(data_dir) / 'population.csv'
+
+    return _get_pop_vacc_csv(fn, populations, header).reshape(len(populations))
 
 def get_fraction_vaccinated(fn=None,
                             populations=_POPULATIONS,
                             header=('fraction_vaccinated',),
+                            data_dir=None,
                            ):
     """
     Load the fraction of vaccinated individuals per
@@ -306,14 +329,18 @@ def get_fraction_vaccinated(fn=None,
         group.
     """
 
-    if fn is None:
-        fn = get_data_dir() / 'vaccinated.csv'
+    if data_dir is None:
+        data_dir = get_data_dir()
 
-    return _get_pop_vacc_csv(fn, populations, header)
+    if fn is None:
+        fn = Path(data_dir) / 'vaccinated.csv'
+
+    return _get_pop_vacc_csv(fn, populations, header).reshape(len(populations))
 
 def get_vaccine_fractions(fn=None,
                           populations=_POPULATIONS,
                           header=_VACC_STATUSES[1:],
+                          data_dir=None,
                          ):
     """
     Load the fractions of vaccines statuses per population
@@ -325,8 +352,8 @@ def get_vaccine_fractions(fn=None,
         ages,biontech,astra,moderna,jj
         [00;12),0,0,0,0
         [12;18),1,0,0,0
-        [18;60),0.69125,0.12925,0.10925,0.07025
-        [60;oo),0.69125,0.12925,0.10925,0.07025
+        [18;60),0.691,0.12925,0.10925,0.07025
+        [60;oo),0.691,0.12925,0.10925,0.07025
 
     Parameters
     ==========
@@ -347,13 +374,17 @@ def get_vaccine_fractions(fn=None,
         vaccination status `v+1` (relative proportion in population group `m`)
     """
 
+    if data_dir is None:
+        data_dir = get_data_dir()
+
     if fn is None:
-        fn = get_data_dir() / 'vaccine_fractions.csv'
+        fn = Path(data_dir) / 'vaccine_fractions.csv'
 
     return _get_pop_vacc_csv(fn, populations, header)
 
 def get_contact_matrix(fn=None,
                        populations=_POPULATIONS,
+                       data_dir=None,
                       ):
     """
     Load the contact matrix from a file.
@@ -362,10 +393,10 @@ def get_contact_matrix(fn=None,
     .. code::
 
         ages,[00;12),[12;18),[18;60),[60;oo)
-        [00;12),2.8394495,0.5205262,3.235192,0.6269835
-        [12;18),0.8907488,4.4044118,4.745159,0.4811966
-        [18;60),0.6357820,0.5449370,6.430791,1.0125184
-        [60;oo),0.2825591,0.1267252,2.321924,2.1267606
+        [00;12),2.83944,0.5205262,3.235192,0.6269835
+        [12;18),0.8907488,4.4044118,4.7159,0.4811966
+        [18;60),0.67820,0.5449370,6.430791,1.0125184
+        [60;oo),0.28591,0.1267252,2.321924,2.1267606
 
     Parameters
     ==========
@@ -383,8 +414,11 @@ def get_contact_matrix(fn=None,
         `i`-individuals.
     """
 
+    if data_dir is None:
+        data_dir = get_data_dir()
+
     if fn is None:
-        fn = get_data_dir() / 'contact_matrix.csv'
+        fn = Path(data_dir) / 'contact_matrix.csv'
 
     return _get_pop_vacc_csv(fn, populations, populations)
 
@@ -394,6 +428,7 @@ def get_disease_free_state(
                             population=None,
                             populations=_POPULATIONS,
                             vaccination_statuses=_VACC_STATUSES,
+                            data_dir=None,
                           ):
     """
     Get the disease-free state of a system defined by vaccine
@@ -428,11 +463,18 @@ def get_disease_free_state(
     """
 
     if fraction_vaccinated is None:
-        fraction_vaccinated = get_fraction_vaccinated()
+        fraction_vaccinated = get_fraction_vaccinated(data_dir=data_dir,
+                                  populations=populations,
+                                  )
     if vaccine_fractions is None:
-        vaccine_fractions = get_vaccine_fractions()
+        vaccine_fractions = get_vaccine_fractions(data_dir=data_dir,
+                                  header=vaccination_statuses[1:],
+                                  populations=populations,
+                                  )
     if population is None:
-        population = get_population_sizes()
+        population = get_population_sizes(data_dir=data_dir,
+                                  populations=populations,
+                                  )
 
     M = len(populations)
     V = len(vaccination_statuses)
@@ -458,6 +500,9 @@ def get_homogeneous_vaccination_parameters(
                                 susceptibility_reduction=None,
                                 transmissibility_reduction=None,
                                 variant='alpha',
+                                data_dir=None,
+                                populations=_POPULATIONS,
+                                vaccination_statuses=_VACC_STATUSES,
                             ):
     """
     Get the disease-free state of a system defined by vaccine
@@ -486,6 +531,8 @@ def get_homogeneous_vaccination_parameters(
         Entry ``transmissibility_reduction[m,v]`` contains the
         relative transmissibility reduction of individuals of
         vaccination status `v` and population group `m`.
+    data_dir : string or pathlib.Path
+        directory from which data should be loaded.
 
     Returns
     =======
@@ -499,16 +546,29 @@ def get_homogeneous_vaccination_parameters(
         full doses
     """
     if fraction_vaccinated is None:
-        fraction_vaccinated = get_fraction_vaccinated()
+        fraction_vaccinated = get_fraction_vaccinated(data_dir=data_dir,
+                                                      populations=populations,
+                                                     )
     if vaccine_fractions is None:
-        vaccine_fractions = get_vaccine_fractions()
+        vaccine_fractions = get_vaccine_fractions(data_dir=data_dir,
+                                                  header=vaccination_statuses[1:],
+                                                  )
     if population is None:
-        population = get_population_sizes()
+        population = get_population_sizes(data_dir=data_dir,
+                                          populations=populations,
+                                         )
 
     if susceptibility_reduction is None:
-        s = get_susceptibility_reduction(variant=variant)[1:,1:]
+        s = get_susceptibility_reduction(variant=variant,data_dir=data_dir,
+                                         populations=populations,
+                                         vaccination_statuses=vaccination_statuses,
+                                         )
+        s = s[1:,1:]
     if transmissibility_reduction is None:
-        r = get_transmissibility_reduction(variant=variant)[1:,1:]
+        r = get_transmissibility_reduction(variant=variant,data_dir=data_dir,
+                                         populations=populations,
+                                         vaccination_statuses=vaccination_statuses)
+        r = r[1:,1:]
 
     M, V = s.shape
     M += 1

@@ -6,6 +6,10 @@ Functions handling covid data.
 import numpy as np
 import vaccontrib.io as io
 
+default_vacc = io.get_default_vaccination_statuses()
+default_pop = io.get_default_populations()
+
+
 from vaccontrib.linalg import get_spectral_radius_and_eigenvector
 from vaccontrib import (
             get_next_generation_matrix_from_matrices,
@@ -19,7 +23,11 @@ from vaccontrib import (
             get_homogeneous_next_generation_matrix,
         )
 
-def get_covid_matrices(variant='alpha'):
+def get_covid_matrices(variant='alpha',
+                       data_dir=None,
+                       vaccination_statuses=default_vacc,
+                       populations=default_pop,
+                       ):
     """
     Load all relevant matrices regarding COVID-19
     vaccine efficacy from package data.
@@ -64,13 +72,32 @@ def get_covid_matrices(variant='alpha'):
           to some base rate.
     """
 
-    gamma = io.get_contact_matrix()
-    S = io.get_disease_free_state()
-    N = io.get_population_sizes()
-    s = io.get_susceptibility_reduction(variant=variant)
-    r = io.get_transmissibility_reduction(variant=variant)
-    a = io.get_relative_infection_rate(variant=variant)
-    b = io.get_relative_recovery_rate(variant=variant)
+    gamma = io.get_contact_matrix(data_dir=data_dir,
+                                  populations=populations,
+                                  )
+    S = io.get_disease_free_state(data_dir=data_dir,
+                                  vaccination_statuses=vaccination_statuses,
+                                  populations=populations,
+                                  )
+    N = io.get_population_sizes(data_dir=data_dir,
+                                  populations=populations,
+                                  )
+    s = io.get_susceptibility_reduction(variant=variant,data_dir=data_dir,
+                                  vaccination_statuses=vaccination_statuses,
+                                  populations=populations,
+                                  )
+    r = io.get_transmissibility_reduction(variant=variant,data_dir=data_dir,
+                                  vaccination_statuses=vaccination_statuses,
+                                  populations=populations,
+                                  )
+    a = io.get_relative_infection_rate(variant=variant,data_dir=data_dir,
+                                  vaccination_statuses=vaccination_statuses,
+                                  populations=populations,
+                                  )
+    b = io.get_relative_recovery_rate(variant=variant,data_dir=data_dir,
+                                  vaccination_statuses=vaccination_statuses,
+                                  populations=populations,
+                                  )
 
     return {
                 'gamma' : gamma,
@@ -85,7 +112,12 @@ def get_covid_matrices(variant='alpha'):
 
 # ================= NGM ===================
 
-def get_next_generation_matrix_covid(R0,variant='alpha'):
+def get_next_generation_matrix_covid(R0,
+                                     variant='alpha',
+                                     data_dir=None,
+                                     vaccination_statuses=default_vacc,
+                                     populations=default_pop,
+                                    ):
     """
     Get the next generation matrix of a covid variant.
 
@@ -105,14 +137,22 @@ def get_next_generation_matrix_covid(R0,variant='alpha'):
         Entry ``K[i,j,v,w]`` contains the average `(i,v)`-offspring
         of a single `(j,w)`-individual.
     """
-    matrices = get_covid_matrices(variant)
+    matrices = get_covid_matrices(variant,data_dir=data_dir,
+                                  vaccination_statuses=vaccination_statuses,
+                                  populations=populations,
+                                )
     K = get_next_generation_matrix_from_matrices(R0, **matrices)
 
     return K
 
 # ================== CONTRIB ===============
 
-def get_contribution_matrix_covid(R0,variant='alpha'):
+def get_contribution_matrix_covid(R0,
+                                  variant='alpha',
+                                  data_dir=None,
+                                  vaccination_statuses=default_vacc,
+                                  populations=default_pop,
+                                  ):
     """
     Get the contribution matrix of a covid variant.
 
@@ -133,11 +173,19 @@ def get_contribution_matrix_covid(R0,variant='alpha'):
         of `(j,w)`-induced `(i,v)`-offspring during exponential
         growth / decay.
     """
-    K = get_next_generation_matrix_covid(R0,variant)
+    K = get_next_generation_matrix_covid(R0,variant,data_dir=data_dir,
+                                          vaccination_statuses=vaccination_statuses,
+                                          populations=populations,
+                                         )
     C = get_contribution_matrix(K)
     return C
 
-def get_reduced_contribution_matrix_covid(R0,variant='alpha'):
+def get_reduced_contribution_matrix_covid(R0,
+                                          variant='alpha',
+                                          data_dir=None,
+                                          vaccination_statuses=default_vacc,
+                                          populations=default_pop,
+                                         ):
     """
     Get the reduced contribution matrix of a covid variant
     (where populations were summed out and only
@@ -160,11 +208,20 @@ def get_reduced_contribution_matrix_covid(R0,variant='alpha'):
         of `w`-induced `v`-offspring during exponential
         growth / decay.
     """
-    K = get_next_generation_matrix_covid(R0,variant)
+    K = get_next_generation_matrix_covid(R0,variant,data_dir=data_dir,
+                                          vaccination_statuses=vaccination_statuses,
+                                          populations=populations,
+                                        )
     C = get_reduced_contribution_matrix(K)
     return C
 
-def get_reduced_vaccinated_susceptible_contribution_matrix_covid(R0,variant='alpha'):
+def get_reduced_vaccinated_susceptible_contribution_matrix_covid(
+                                              R0,
+                                              variant='alpha',
+                                              data_dir=None,
+                                              vaccination_statuses=default_vacc,
+                                              populations=default_pop,
+                                          ):
     """
     Get the reduced contribution matrix of a covid variant
     where populations were summed over and active vaccination
@@ -189,11 +246,19 @@ def get_reduced_vaccinated_susceptible_contribution_matrix_covid(R0,variant='alp
         growth / decay where `w` and `v` can be either
         'vaccinated' or 'not vaccinated'
     """
-    K = get_next_generation_matrix_covid(R0,variant)
+    K = get_next_generation_matrix_covid(R0,variant,data_dir=data_dir,
+                                          vaccination_statuses=vaccination_statuses,
+                                          populations=populations,
+                                         )
     C = get_reduced_vaccinated_susceptible_contribution_matrix(K)
     return C
 
-def get_reduced_population_contribution_matrix_covid(R0,variant='alpha'):
+def get_reduced_population_contribution_matrix_covid(R0,
+                                                     variant='alpha',
+                                                     data_dir=None,
+                                                     vaccination_statuses=default_vacc,
+                                                     populations=default_pop,
+                                                     ):
     """
     Get the reduced contribution matrix of a covid variant
     (where vaccination stati were summed out and only
@@ -216,13 +281,21 @@ def get_reduced_population_contribution_matrix_covid(R0,variant='alpha'):
         of `i`-induced `j`-offspring during exponential
         growth / decay.
     """
-    K = get_next_generation_matrix_covid(R0,variant)
+    K = get_next_generation_matrix_covid(R0,variant,data_dir=data_dir,
+                                          vaccination_statuses=vaccination_statuses,
+                                          populations=populations,
+                                        )
     C = get_reduced_population_contribution_matrix(K)
     return C
 
 # ================== EIGENVEC ===============
 
-def get_eigenvector_covid(R0,variant='alpha'):
+def get_eigenvector_covid(R0,
+                          variant='alpha',
+                          data_dir=None,
+                          vaccination_statuses=default_vacc,
+                          populations=default_pop,
+                          ):
     """
     Get the population eigenvector for a covid variant.
 
@@ -242,11 +315,20 @@ def get_eigenvector_covid(R0,variant='alpha'):
         Entry ``y[i,v]`` contains the relative fraction
         of `(i,v)`-individuals in the population.
     """
-    K = get_next_generation_matrix_covid(R0,variant)
+    K = get_next_generation_matrix_covid(R0,variant,data_dir=data_dir,
+                                         vaccination_statuses=vaccination_statuses,
+                                         populations=populations,
+                                        )
     y = get_eigenvector(K)
     return y
 
-def get_reduced_eigenvector_covid(R0,variant='alpha'):
+def get_reduced_eigenvector_covid(
+                          R0,
+                          variant='alpha',
+                          data_dir=None,
+                          vaccination_statuses=default_vacc,
+                          populations=default_pop,
+                        ):
     """
     Get the population eigenvector for a covid variant
     (where populations were summed out and only
@@ -268,10 +350,22 @@ def get_reduced_eigenvector_covid(R0,variant='alpha'):
         Entry ``y[v]`` contains the fraction of
         infected belonging to vaccination status v.
     """
-    y = get_eigenvector_covid(R0,variant).sum(axis=0)
-    return C
+    y = get_eigenvector_covid(R0,
+                              variant,
+                              data_dir=data_dir,
+                              vaccination_statuses=vaccination_statuses,
+                              populations=populations,
+                             )
+    y = y.sum(axis=0)
+    return y
 
-def get_reduced_vaccinated_susceptible_eigenvector_covid(R0,variant='alpha'):
+def get_reduced_vaccinated_susceptible_eigenvector_covid(
+                                     R0,
+                                     variant='alpha',
+                                     data_dir=None,
+                                     vaccination_statuses=default_vacc,
+                                     populations=default_pop,
+                                 ):
     """
     Get the reduced population eigenvector for a covid variant
     where populations were summed over and active vaccination
@@ -295,11 +389,22 @@ def get_reduced_vaccinated_susceptible_eigenvector_covid(R0,variant='alpha'):
         infected belonging to vaccination status v
         (0 = unvaccinated, 1 = vaccinated).
     """
-    y = get_reduced_eigenvector_covid(R0,variant)
+    y = get_reduced_eigenvector_covid(R0,
+                                      variant,
+                                      data_dir=data_dir,
+                                      vaccination_statuses=vaccination_statuses,
+                                      populations=populations,
+                                      )
     y = np.array([y[0], y[1:].sum()])
     return y
 
-def get_reduced_population_eigenvector_covid(R0,variant='alpha'):
+def get_reduced_population_eigenvector_covid(
+                                            R0,
+                                            variant='alpha',
+                                            data_dir=None,
+                                            vaccination_statuses=default_vacc,
+                                            populations=default_pop,
+                                           ):
     """
     Get the reduced population eigenvector for a covid variant
     (where vaccination stati were summed out and only
@@ -321,12 +426,24 @@ def get_reduced_population_eigenvector_covid(R0,variant='alpha'):
         Entry ``y[i]`` contains the fraction of
         infected belonging to group i.
     """
-    y = get_eigenvector_covid(R0,variant).sum(axis=1)
+    y = get_eigenvector_covid(R0,
+                              variant,
+                              data_dir=data_dir,
+                              vaccination_statuses=vaccination_statuses,
+                              populations=populations,
+                              )
+    y = y.sum(axis=1)
     return y
 
 # ========== HOMOGENEOUS ===============
 
-def get_homogeneous_contribution_matrix_covid(R0,variant):
+def get_homogeneous_contribution_matrix_covid(
+                                              R0,
+                                              variant,
+                                              data_dir=None,
+                                              vaccination_statuses=default_vacc,
+                                              populations=default_pop,
+                                        ):
     """
     Get the unvaccinated/vaccinated contribution matrix
     for a covid variant where fraction of
@@ -351,11 +468,21 @@ def get_homogeneous_contribution_matrix_covid(R0,variant):
         `w`-induced `v`-offspring during exponential
         growth/decay.
     """
-    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant)
+    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant,
+                                                        data_dir=data_dir,
+                                                        vaccination_statuses=vaccination_statuses,
+                                                        populations=populations,
+                                                        )
     C_hom = get_homogeneous_contribution_matrix(R0, v, s, r)
     return C_hom
 
-def get_homogeneous_next_generation_matrix_covid(R0,variant):
+def get_homogeneous_next_generation_matrix_covid(
+                                              R0,
+                                              variant,
+                                              data_dir=None,
+                                              vaccination_statuses=default_vacc,
+                                              populations=default_pop,
+                                          ):
     """
     Get the unvaccinated/vaccinated next generation matrix
     for a covid variant where fraction of
@@ -379,11 +506,20 @@ def get_homogeneous_next_generation_matrix_covid(R0,variant):
         Entry ``K[v,w]`` contains the average `v`-offspring
         of a single `w`-individual.
     """
-    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant)
+    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant,
+                                                        data_dir=data_dir,
+                                                        vaccination_statuses=vaccination_statuses,
+                                                        populations=populations,
+                                                        )
     K_hom = get_homogeneous_next_generation_matrix(R0, v, s, r)
     return K_hom
 
-def get_homogeneous_eigenvector_covid(variant):
+def get_homogeneous_eigenvector_covid(
+                                    variant,
+                                    data_dir=None,
+                                    vaccination_statuses=default_vacc,
+                                    populations=default_pop,
+                                ):
     """
     Get the unvaccinated/vaccinated eigenvector
     for a covid variant where fraction of
@@ -404,7 +540,11 @@ def get_homogeneous_eigenvector_covid(variant):
         infected belonging to vaccination status v
         (0 = unvaccinated, 1 = vaccinated).
     """
-    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant)
+    v, s, r = io.get_homogeneous_vaccination_parameters(variant=variant,
+                                                        data_dir=data_dir,
+                                                        vaccination_statuses=vaccination_statuses,
+                                                        populations=populations,
+                                                        )
     y_hom = get_homogeneous_eigenvector(v, s)
     return y_hom
 
