@@ -8,16 +8,21 @@ Description of this package goes here.
 * documentation: http://vaccontrib.readthedocs.io/
 
 ```python
->>> from vaccontrib.covid import get_reduced_vaccinated_susceptile_contribution_matrix_covid
+>>> from vaccontrib.covid import get_reduced_vaccinated_susceptible_contribution_matrix_covid
 >>> R0 = 6
->>> C = get_reduced_vaccinated_susceptile_contribution_matrix_covid(R0,variant='delta')
-array([[1.61305929, 0.23342947],
-       [0.39478329, 0.08083173]])
+>>> C = get_reduced_vaccinated_susceptible_contribution_matrix_covid(R0,variant='delta')
+>>> C/C.sum()
+array([[0.38159051, 0.17360365],
+       [0.28493897, 0.15986686]])
 ```
+
+Also, check out the [tutorial notebook](https://github.com/benmaier/vaccontrib/blob/main/cookbook/notebooks/covid_examples.ipynb) and an [explanatory notebook including stochastic simulations](https://github.com/benmaier/vaccontrib/blob/main/cookbook/notebooks/first_examples.ipynb).
 
 ## Install
 
-    pip install vaccontrib
+
+    git clone git@github.com:benmaier/vaccontrib.git
+    pip install ./vaccontrib
 
 `vaccontrib` was developed and tested for 
 
@@ -33,9 +38,34 @@ So far, the package's functionality was tested on Mac OS X and CentOS only.
 
 * `numpy>=1.17`
 
-## Documentation
+## Manuscript
 
-The full documentation is available at [vaccontrib.readthedocs.io](http://vaccontrib.readthedocs.io).
+Results found using this software package were reported in a [preprint](https://medrxiv.org/cgi/content/short/2021.11.24.21266831v1). To replicate the results, use the scripts in the [paper\_analysis](https://github.com/benmaier/vaccontrib/tree/main/paper_analysis) directory. E.g. to get a comprehensive overview of results for a parameterset, run 
+
+    python compute.py DIRNAME1 DIRNAME2
+
+e.g.
+
+    python compute.py 00_lower 01_upper
+ 
+See the help text:
+
+    usage: compute.py [-h] [-u RU] [-v RV] [-f] [-R R0] dirs [dirs ...]
+    
+    Compute contribution matrices.
+    
+    positional arguments:
+      dirs                directories for which contributions matrices should be computed
+    
+    optional arguments:
+      -h, --help          show this help message and exit
+      -u RU, --Ru RU      Base R-value of unvaccinated
+      -v RV, --Rv RV      Base R-value of vaccinated
+      -f, --save-figures  create, show, and save illustrations
+      -R R0, --R0 R0      Base R0 to which the contribution will be scaled
+    
+
+Make sure you have [numpyarray_to_latex](https://github.com/benmaier/numpyarray_to_latex) installed.
 
 ## Changelog
 
