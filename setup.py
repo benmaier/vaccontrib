@@ -19,6 +19,8 @@ setup(
     python_requires='>=3.6',
     install_requires=[
                 'numpy>=1.17',
+                'matplotlib>=3.3',
+                'bfmplot>=0.0.11',
     ],
     tests_require=['pytest', 'pytest-cov'],
     setup_requires=['pytest-runner'],

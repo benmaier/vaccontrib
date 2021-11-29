@@ -3,23 +3,34 @@ About
 vaccontrib
 ==========
 
-|CircleCI|
-
-Description of this package goes here.
+Code to quantify the contributions unvaccinated and vaccinated
+subpopulations make towards the effectie reproduction number and new
+infections.
 
 -  repository: https://github.com/benmaier/vaccontrib/
 -  documentation: http://vaccontrib.readthedocs.io/
 
 .. code:: python
 
-   print(get_sqrt_2())
+   >>> from vaccontrib.covid import get_reduced_vaccinated_susceptible_contribution_matrix_covid
+   >>> R0 = 6
+   >>> C = get_reduced_vaccinated_susceptible_contribution_matrix_covid(R0,variant='delta')
+   >>> C/C.sum()
+   array([[0.38159051, 0.17360365],
+          [0.28493897, 0.15986686]])
+
+Also, check out the `tutorial
+notebook <https://github.com/benmaier/vaccontrib/blob/main/cookbook/notebooks/covid_examples.ipynb>`__
+and an `explanatory notebook including stochastic
+simulations <https://github.com/benmaier/vaccontrib/blob/main/cookbook/notebooks/first_examples.ipynb>`__.
 
 Install
 -------
 
 .. code:: bash
 
-   pip install vaccontrib
+   git clone git@github.com:benmaier/vaccontrib.git
+   pip install ./vaccontrib
 
 ``vaccontrib`` was developed and tested for
 
@@ -37,12 +48,50 @@ Dependencies
 installed by ``pip`` during the installation process
 
 -  ``numpy>=1.17``
+-  ``matplotlib>=3.3``
+-  ``bfmplot>=0.0.11``
 
-Documentation
--------------
+Manuscript
+----------
 
-The full documentation is available at
-`vaccontrib.readthedocs.io <http://vaccontrib.readthedocs.io>`__.
+Results found using this software package were reported in a
+`preprint <https://medrxiv.org/cgi/content/short/2021.11.24.21266831v1>`__.
+To replicate the results, use the scripts in the
+`paper_analysis <https://github.com/benmaier/vaccontrib/tree/main/paper_analysis>`__
+directory. E.g. to get a comprehensive overview of results for a
+parameterset, run
+
+.. code:: bash
+
+   python compute.py DIRNAME1 DIRNAME2
+
+e.g.
+
+.. code:: bash
+
+   python compute.py 00_lower 01_upper
+
+See the help text:
+
+.. code:: bash
+
+   usage: compute.py [-h] [-u RU] [-v RV] [-f] [-R R0] dirs [dirs ...]
+
+   Compute contribution matrices.
+
+   positional arguments:
+     dirs                directories for which contributions matrices should be computed
+
+   optional arguments:
+     -h, --help          show this help message and exit
+     -u RU, --Ru RU      Base R-value of unvaccinated
+     -v RV, --Rv RV      Base R-value of vaccinated
+     -f, --save-figures  create, show, and save illustrations
+     -R R0, --R0 R0      Base R0 to which the contribution will be scaled
+
+Make sure you have
+`numpyarray_to_latex <https://github.com/benmaier/numpyarray_to_latex>`__
+installed.
 
 Changelog
 ---------
@@ -103,7 +152,5 @@ until the warnings disappear. Then do
 
    make upload
 
-.. |CircleCI| image:: https://circleci.com/gh/benmaier/vaccontrib.svg?style=svg
-   :target: https://circleci.com/gh/benmaier/vaccontrib
 .. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg
    :target: code-of-conduct.md

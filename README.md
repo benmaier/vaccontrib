@@ -35,6 +35,8 @@ So far, the package's functionality was tested on Mac OS X and CentOS only.
 `vaccontrib` directly depends on the following packages which will be installed by `pip` during the installation process
 
 * `numpy>=1.17`
+* `matplotlib>=3.3`
+* `bfmplot>=0.0.11`
 
 ## Manuscript
 
