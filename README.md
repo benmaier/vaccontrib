@@ -1,8 +1,6 @@
 # vaccontrib
 
-[![CircleCI](https://circleci.com/gh/benmaier/vaccontrib.svg?style=svg)](https://circleci.com/gh/benmaier/vaccontrib)
-
-Description of this package goes here.
+Code to quantify the contributions unvaccinated and vaccinated subpopulations make towards the effectie reproduction number and new infections.
 
 * repository: https://github.com/benmaier/vaccontrib/
 * documentation: http://vaccontrib.readthedocs.io/
