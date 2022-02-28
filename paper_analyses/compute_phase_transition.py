@@ -13,7 +13,7 @@ import matplotlib.ticker as mtick
 
 _1_minus_Ru = np.linspace(0,1,21)
 
-Rv_crit = np.zeros((len(_1_minus_Ru),2))
+Rv_crit = np.zeros((len(_1_minus_Ru),3))
 
 
 pl.figure()
@@ -31,8 +31,9 @@ vec = []
 for i, _1mRu in tqdm(enumerate(_1_minus_Ru)):
     Rv_crit[i,0] = get_root(1-_1mRu,'00_lower')
     Rv_crit[i,1] = get_root(1-_1mRu,'01_upper')
+    Rv_crit[i,2] = get_root(1-_1mRu,'06_super_low')
 
-for i in range(2):
+for i in range(3):
     p = np.polyfit(_1_minus_Ru, 1-Rv_crit[:,i], 1)
     print("m =", p[0], "-1/m =", -1/p[0])
     ys = np.polyval(p,[0,1])
@@ -43,16 +44,18 @@ for i in range(2):
        ])
     )
 
-for i in range(2):
+for i in range(3):
     vec[i] = np.array([[0,-1],[1,0]]).dot(vec[i])
     vec[i] /= vec[i].sum()
 
-    print(['00_lower','01_upper'][i], vec[i])
-    print(['00_lower','01_upper'][i], vec[i][0]/vec[i][1])
+    print(['00_lower','01_upper','06_super_low'][i], vec[i])
+    print(['00_lower','01_upper','06_super_low'][i], vec[i][0]/vec[i][1])
 
-ax.plot(_1_minus_Ru,1-Rv_crit[:,0],color='k',ls='--',label='lower eff.')
+ax.plot(_1_minus_Ru,1-Rv_crit[:,2],color='k',ls=':',label='low')
+ax.fill_between(_1_minus_Ru,np.zeros_like(Rv_crit[:,2]), 1-Rv_crit[:,2],color='k',alpha=0.1)
+ax.plot(_1_minus_Ru,1-Rv_crit[:,0],color='k',ls='--',label='medium')
 ax.fill_between(_1_minus_Ru,np.zeros_like(Rv_crit[:,0]), 1-Rv_crit[:,0],color='k',alpha=0.1)
-ax.plot(_1_minus_Ru,1-Rv_crit[:,1],color='k',ls='-',label='upper bnd.')
+ax.plot(_1_minus_Ru,1-Rv_crit[:,1],color='k',ls='-',label='high')
 ax.fill_between(_1_minus_Ru,np.zeros_like(Rv_crit[:,1]), 1-Rv_crit[:,1],color='k',alpha=0.1)
 ax.set_xlim([0,.5])
 ax.set_ylim([0,.5])
