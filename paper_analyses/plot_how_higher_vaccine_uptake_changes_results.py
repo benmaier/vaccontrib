@@ -1,6 +1,7 @@
 import bfmplot as bp
 pl = bp.pl
 import numpy as np
+import matplotlib.patheffects as PathEffects
 
 
 N = np.array([
@@ -78,11 +79,14 @@ ax.text(right,1.,'R = 1',ha='right',va='bottom')
 ax.plot([left, 1-0.4], [0.863,0.863],':',c='#333333',zorder=-1000)
 ax.plot([left, 0-0.4], [1.200,1.200],':',c='#333333',zorder=-1000)
 
+
 for i, C in enumerate([C67, C90]):
     cum, cols, lbls = make_bar(C, indices)
-    for bar, color, lbl in zip(cum, cols, lbls):
+    for ibar, (bar, color, lbl) in enumerate(zip(cum, cols, lbls)):
         ax.bar([i],[bar],color=color)
-        ax.text(i,bar-0.01,lbl,ha='center',va='top',color='w',fontsize='small')
+        txt = ax.text(i,bar-0.01,lbl,ha='center',va='top',color=['w','k'][ibar//2],fontsize='medium',fontweight='bold')
+        txt = ax.text(i,bar-0.01,lbl,ha='center',va='top',color='w',fontsize='medium',fontweight='bold')
+        #txt.set_path_effects([PathEffects.withStroke(linewidth=1, foreground='k')])
 
 ax.set_ylim(0,1.205)
 ax.set_xlim(left,right)

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as pl
+#pl.rcParams["font.size"] = 12
 
 
 from vaccontrib.covid import (
@@ -72,12 +73,13 @@ ax2 = ax.inset_axes([.7,.3,.3,.2])
 axs = [ax2, ax]
 
 x = 1-ms
+print(x)
 
-axs[0].plot(x, Cs.sum(axis=1)[:,0],label='unvaccinated',c=uv_colors[0])
-axs[0].plot(x, Cs.sum(axis=1)[:,1],label='vaccinated',c=uv_colors[1])
-axs[1].plot(x, Cunnormeds.sum(axis=1)[:,0],label='unvaccinated',c=uv_colors[0])
-axs[1].plot(x, Cunnormeds.sum(axis=1)[:,1],label='vaccinated',c=uv_colors[1])
-axs[1].plot(x, Cunnormeds.sum(axis=1).sum(axis=1),label='total',c='k')
+axs[0].plot(x, Cs.sum(axis=1)[:,0],label='unvaccinated',c=uv_colors[0],ls='-.')
+axs[0].plot(x, Cs.sum(axis=1)[:,1],label='vaccinated',c=uv_colors[1],ls='--')
+axs[1].plot(x, Cunnormeds.sum(axis=1)[:,0],label='unvaccinated',c=uv_colors[0],ls='-.')
+axs[1].plot(x, Cunnormeds.sum(axis=1)[:,1],label='vaccinated',c=uv_colors[1],ls='--')
+axs[1].plot(x, Cunnormeds.sum(axis=1).sum(axis=1),label='total',c='k',lw=2)
 leg = axs[1].legend()
 bp.align_legend_right(leg)
 
@@ -99,7 +101,9 @@ for ax in axs:
     bp.strip_axis(ax)
     ax.set_xticklabels(ax.get_xticklabels()[::-1])
 
-fig.tight_layout()
+axs[0].set_xticks([0.,1])
+axs[0].set_xticklabels(['100%','0%'])
+#fig.tight_layout()
 #axs[1].set_ylim([0,.5])
 
 fig.savefig('mixing_analysis.png',dpi=150)

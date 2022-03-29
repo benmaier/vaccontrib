@@ -73,5 +73,6 @@ ax.xaxis.set_major_formatter(mtick.PercentFormatter(1))
 fig.tight_layout()
 
 fig.savefig('critical_reduction.pdf')
+fig.savefig('critical_reduction.png',dpi=300)
 
 pl.show()
