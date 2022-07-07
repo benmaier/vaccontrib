@@ -10,7 +10,7 @@ from vaccontrib.linalg import (
             convert_4d_matrix_to_2d_block,
         )
 
-def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
+def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b, compute_K0_without_s0_and_r0=False):
     """
     Construct a next generation matrix from a bunch of
     matrices defining SIR dynamics in a structured,
@@ -56,6 +56,12 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
         recovery rate of individuals of
         vaccination status `v` and population group `m` relative
         to some base rate.
+    compute_K0_without_s0_and_r0 : bool, default = False
+        If True, K0 will be computed as
+
+            K0_ij = gamma_ij * Ni / Nj * a_j0 / b_j0,
+
+        ignoring s0 and r0
 
     Returns
     =======
@@ -79,7 +85,11 @@ def get_next_generation_matrix_from_matrices(R0,gamma, S, N, s, r, a, b):
     s0 = s[:,0]
     r0 = r[:,0]
 
-    K0 = np.diag(1-s0).dot(gamma).dot(np.diag(a0)).dot(np.diag(1-r0)).dot(np.diag(1/b0))
+    if compute_K0_without_s0_and_r0:
+        K0 = (gamma).dot(np.diag(a0)).dot(np.diag(1/b0))
+    else:
+        K0 = np.diag(1-s0).dot(gamma).dot(np.diag(a0)).dot(np.diag(1-r0)).dot(np.diag(1/b0))
+
     rho0, _ = get_spectral_radius_and_eigenvector(K0)
 
     if not hasattr(R0,'__len__'):
