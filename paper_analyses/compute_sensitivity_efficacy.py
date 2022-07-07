@@ -27,7 +27,7 @@ colors = [
          ]
 
 
-matrices = get_covid_matrices('delta','01_upper',('no','vacc'))
+matrices = get_covid_matrices('delta','02_upper',('no','vacc'))
 
 reduction = np.linspace(1,0,41)
 

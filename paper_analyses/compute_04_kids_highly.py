@@ -46,7 +46,6 @@ print(f"{total[1]/total[0]=}")
 VACC = ('no', 'vacc')
 
 
-#for data_dir in ['00_lower', '01_middle', '02_upper','03_realistic']:
 for data_dir in [ '04_kids_hihgly_susceptible_and_infectious_lower']:
     matrices = get_covid_matrices('delta',data_dir,vaccination_statuses=VACC)
     N = matrices['N']

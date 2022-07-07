@@ -28,7 +28,7 @@ colors = [
 uv_colors = [ colors[1][1], colors[0][0] ]
 
 
-matrices = get_covid_matrices('delta','01_upper',('no','vacc'))
+matrices = get_covid_matrices('delta','02_upper',('no','vacc'))
 
 reduction = np.linspace(1,0,41)
 n = len(ms)

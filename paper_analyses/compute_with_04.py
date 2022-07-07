@@ -36,8 +36,7 @@ print(total[1,:].sum()/total[0,:].sum())
 VACC = ('no', 'vacc')
 
 
-#for data_dir in ['00_lower', '01_middle', '02_upper','03_realistic']:
-for data_dir in [ '03_realistic']:
+for data_dir in [ '01_medium']:
     matrices = get_covid_matrices('delta',data_dir,vaccination_statuses=VACC)
     N = matrices['N']
     C =  get_reduced_vaccinated_susceptible_contribution_matrix_covid(R0,'delta',data_dir,vaccination_statuses=VACC)

@@ -32,7 +32,7 @@ colors = [
 uv_colors = [ colors[0][0], colors[1][1] ]
 
 
-matrices = get_covid_matrices('delta','00_lower',('no','vacc'))
+matrices = get_covid_matrices('delta','01_medium',('no','vacc'))
 
 ms = np.linspace(1,0,41)
 n = len(ms)
@@ -82,6 +82,38 @@ axs[1].plot(x, Cunnormeds.sum(axis=1)[:,1],label='vaccinated',c=uv_colors[1],ls=
 axs[1].plot(x, Cunnormeds.sum(axis=1).sum(axis=1),label='total',c='k',lw=2)
 leg = axs[1].legend()
 bp.align_legend_right(leg)
+
+import csv
+
+with open('Fig2b_outer.csv','w') as f:
+    writer = csv.writer(f)
+    writer.writerow((
+            'mixing_parameter_m',
+            'unvacc_absolute_contribution_to_R',
+            'vacc_absolute_contribution_to_R',
+            'total_R',
+        ))
+    for row in zip(
+                   x,
+                   Cunnormeds.sum(axis=1)[:,0],
+                   Cunnormeds.sum(axis=1)[:,1],
+                   Cunnormeds.sum(axis=1).sum(axis=1),
+                   ):
+        writer.writerow([ "{:6.4f}".format(val) for val in row])
+
+with open('Fig2b_inset.csv','w') as f:
+    writer = csv.writer(f)
+    writer.writerow((
+            'mixing_parameter_m',
+            'unvacc_relative_contribution_to_R',
+            'vacc_relative_contribution_to_R',
+        ))
+    for row in zip(
+                   x,
+                   Cs.sum(axis=1)[:,0],
+                   Cs.sum(axis=1)[:,1],
+                   ):
+        writer.writerow([ "{:6.4f}".format(val) for val in row])
 
 axs[1].set_xlim([0,1])
 axs[0].set_ylim([0,1])

@@ -32,7 +32,7 @@ uv_colors = [ colors[0][0], colors[1][1] ]
 reduction = np.linspace(1,0,41)
 n = len(reduction)
 
-matrices = get_covid_matrices('delta','01_upper',('no','vacc'))
+matrices = get_covid_matrices('delta','02_upper',('no','vacc'))
 s0 = np.array(matrices['s'])
 r0 = np.array(matrices['r'])
 b0 = np.array(matrices['b'])
@@ -76,15 +76,40 @@ ax.plot(x,0.5*np.ones_like(x),c='#aaaaaa',ls='-')
 ax.plot([0.22,0.22],[0,.5],c='#aaaaaa',ls='-')
 ax.plot([0.41,0.41],[0,.5],c='#aaaaaa',ls='-')
 
+data_for_csv = [x]
+
 for imode in range(2):
     unvacc = Cs[imode,:,:,:].sum(axis=1)[:,0]
     vacc = Cs[imode,:,:,:].sum(axis=1)[:,1]
+
+    data_for_csv.append(unvacc)
+    data_for_csv.append(vacc)
+
     ax.plot(x,unvacc,color=uv_colors[0],label=labels[imode],ls=linestyles[imode])
     ax.plot(x,vacc,color=uv_colors[1],ls=linestyles[imode])
+
     ax.set_ylabel('fraction of new infections caused by ...')
     ax.legend()
+
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(1))
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(1))
+
+import csv
+
+with open('Fig03.csv','w') as f:
+    writer = csv.writer(f)
+    writer.writerow((
+            'age_independent_vaccine_efficacy_s',
+            'unvacc_contrib_optimistic',
+            'vacc_contrib_optimistic',
+            'unvacc_contrib_pessimistic',
+            'vacc_contrib_pessimistic',
+        ))
+    for row in zip(*data_for_csv):
+        writer.writerow(
+                    [ "{:6.4f}".format(val) for val in row]
+                )
+
 
 ax.set_yticks([0,.25,.5,.75,1])
 ax.set_xlim(0,1)
@@ -102,7 +127,8 @@ bp.strip_axis(ax)
 
 fig.tight_layout()
 
-fig.savefig('efficacy_scan.pdf')
+fig.savefig('efficacy_scan.pdf',dpi=300)
+fig.savefig('Fig03.pdf',dpi=300)
 
 
 pl.show()
