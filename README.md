@@ -40,6 +40,8 @@ So far, the package's functionality was tested on Mac OS X and CentOS only.
 
 ## Manuscript
 
+### Analysis and Results
+
 Results found using this software package were reported in a [preprint](https://medrxiv.org/cgi/content/short/2021.11.24.21266831v1). To replicate the results, use the scripts in the [paper\_analysis](https://github.com/benmaier/vaccontrib/tree/main/paper_analysis) directory. E.g. to get a comprehensive overview of results for a parameterset, run 
 
     python compute.py DIRNAME1 DIRNAME2
@@ -66,6 +68,10 @@ See the help text:
     
 
 Make sure you have [numpyarray_to_latex](https://github.com/benmaier/numpyarray_to_latex) installed.
+
+### Data in Figures
+
+To comply with journal policies, all data shown in figures can be found in the file `FigureData.xlsx`.
 
 ## Changelog
 
